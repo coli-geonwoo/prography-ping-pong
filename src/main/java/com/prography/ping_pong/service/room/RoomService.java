@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -17,11 +18,13 @@ public class RoomService {
 
     private final RoomRepository roomRepository;
 
+    @Transactional(readOnly = true)
     public RoomPageResponse findAll(Pageable pageable) {
         Page<Room> roomPage = roomRepository.findAllByOrderByIdAsc(pageable);
         return new RoomPageResponse(roomPage);
     }
 
+    @Transactional(readOnly = true)
     public RoomDetailResponse findRoom(long roomId) {
         Room room = findById(roomId);
         return new RoomDetailResponse(room);
