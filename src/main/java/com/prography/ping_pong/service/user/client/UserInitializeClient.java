@@ -1,6 +1,5 @@
 package com.prography.ping_pong.service.user.client;
 
-import com.prography.ping_pong.config.PrographyProperties;
 import com.prography.ping_pong.dto.request.user.FakerRequest;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;

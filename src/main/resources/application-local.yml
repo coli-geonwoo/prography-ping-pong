@@ -23,5 +23,5 @@ spring:
     defer-datasource-initialization: true
 
 prography:
-  base_url: "https://fakerapi.it/api/v1/users"
-  locale : "ko_KR"
+  base-url: https://fakerapi.it/api/v1/users
+  locale : ko_KR
