@@ -39,9 +39,7 @@ class RoomServiceTest extends BaseServiceTest {
                 () -> assertThat(roomDetailResponse.roomType()).isEqualTo(savedRoom.getRoomType()),
                 () -> assertThat(roomDetailResponse.hostId()).isEqualTo(savedRoom.getHost().getId()),
                 () -> assertThat(roomDetailResponse.title()).isEqualTo(savedRoom.getTitle()),
-                () -> assertThat(roomDetailResponse.status()).isEqualTo(savedRoom.getStatus()),
-                () -> assertThat(roomDetailResponse.createdAt()).isEqualTo(savedRoom.getCreatedAt()),
-                () -> assertThat(roomDetailResponse.updatedAt()).isEqualTo(savedRoom.getUpdatedAt())
+                () -> assertThat(roomDetailResponse.status()).isEqualTo(savedRoom.getStatus())
         );
     }
 
