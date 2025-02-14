@@ -19,9 +19,6 @@ import org.springframework.http.HttpStatus;
 
 class UserControllerTest extends BaseControllerTest {
 
-    @Autowired
-    private UserRepository userRepository;
-
     @DisplayName("유저를 초기화한다")
     @Test
     void initialize() {

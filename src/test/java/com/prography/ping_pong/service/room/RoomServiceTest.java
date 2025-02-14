@@ -21,12 +21,6 @@ import org.springframework.data.domain.Pageable;
 class RoomServiceTest extends BaseServiceTest {
 
     @Autowired
-    private RoomRepository roomRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private RoomService roomService;
 
     @DisplayName("아이디로 방을 찾는다")

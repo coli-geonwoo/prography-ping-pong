@@ -21,12 +21,6 @@ import org.springframework.http.HttpStatus;
 
 class RoomControllerTest extends BaseControllerTest {
 
-    @Autowired
-    private RoomRepository roomRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
     @DisplayName("방을 찾을 수 있다")
     @Test
     void findRoom() {
