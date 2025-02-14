@@ -24,3 +24,4 @@ spring:
 
 prography:
   base_url: "https://fakerapi.it/api/v1/users"
+  locale : "ko_KR"
