@@ -18,7 +18,7 @@ public class RoomService {
     private final RoomRepository roomRepository;
 
     public RoomPageResponse findAll(Pageable pageable) {
-        Page<Room> roomPage = roomRepository.findAll(pageable);
+        Page<Room> roomPage = roomRepository.findAllByOrderByIdAsc(pageable);
         return new RoomPageResponse(roomPage);
     }
 
