@@ -1,5 +1,6 @@
 package com.prography.ping_pong.domain.room;
 
+import com.prography.ping_pong.domain.BaseEntity;
 import com.prography.ping_pong.domain.user.User;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -18,7 +19,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Room {
+public class Room extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
