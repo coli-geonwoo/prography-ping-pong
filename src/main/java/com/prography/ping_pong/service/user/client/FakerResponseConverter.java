@@ -14,16 +14,16 @@ public class FakerResponseConverter {
 
     private static final long OK_RESPONSE_CODE = 200;
 
-    public UserDetails convert(ConvertibleClientHttpResponse clientHttpResponse) {
+    public FakerUserDetails convert(ConvertibleClientHttpResponse clientHttpResponse) {
         FakerResponse fakerResponse = clientHttpResponse.bodyTo(FakerResponse.class);
         validate(fakerResponse);
         return mapToUserDetails(fakerResponse.data());
     }
 
-    private UserDetails mapToUserDetails(List<FakerUserResponse> responses) {
+    private FakerUserDetails mapToUserDetails(List<FakerUserResponse> responses) {
         return responses.stream()
-                .map(response -> new UserDetail(response.id(), response.username(), response.email()))
-                .collect(Collectors.collectingAndThen(Collectors.toList(), UserDetails::new));
+                .map(response -> new FakerUserDetail(response.id(), response.username(), response.email()))
+                .collect(Collectors.collectingAndThen(Collectors.toList(), FakerUserDetails::new));
     }
 
     private void validate(FakerResponse fakerResponse) {

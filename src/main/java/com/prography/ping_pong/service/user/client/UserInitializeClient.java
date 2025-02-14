@@ -25,7 +25,7 @@ public class UserInitializeClient {
         this.restClient = restClientBuilder.build();
     }
 
-    public UserDetails getUserDetails(FakerRequest request) {
+    public FakerUserDetails getUserDetails(FakerRequest request) {
         return restClient.get()
                 .uri(makeUserDataUrl(request.seed(), request.quantity()))
                 .exchange((req, res) -> responseConverter.convert(res));

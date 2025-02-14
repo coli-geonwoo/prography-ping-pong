@@ -3,10 +3,9 @@ package com.prography.ping_pong.service.user.client;
 import com.prography.ping_pong.domain.user.UserStatus;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @Getter
-public class UserDetail {
+public class FakerUserDetail {
 
     private static final long USER_ACTIVE_THRESHOLD = 30;
     private static final long USER_WAIT_THRESHOLD = 60;
@@ -23,7 +22,7 @@ public class UserDetail {
     private final String email;
 
 
-    public UserDetail(long fakerId, String name, String email) {
+    public FakerUserDetail(long fakerId, String name, String email) {
         this.fakerId = fakerId;
         this.name = name;
         this.status = mapStatus(fakerId);
