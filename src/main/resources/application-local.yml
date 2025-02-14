@@ -21,3 +21,6 @@ spring:
     hibernate:
       ddl-auto: create
     defer-datasource-initialization: true
+
+prography:
+  base_url: "https://fakerapi.it/api/v1/users"
