@@ -27,7 +27,7 @@ class HealthCheckControllerTest extends BaseControllerTest {
 
         assertAll(
                 () -> assertThat(response.code()).isEqualTo(HttpStatus.OK.value()),
-                () -> assertThat(response.message()).isEqualTo(ResponseMessage.SUCCESS.getMessage())
+                () -> assertThat(response.message()).isEqualTo(ResponseMessage.SUCCESS.getValue())
         );
     }
 }

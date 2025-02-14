@@ -12,7 +12,7 @@ public class HealthCheckController {
 
     @GetMapping("/health")
     public ResponseEntity<ApiResponse> healthCheck() {
-        ApiResponse response = new ApiResponse(HttpStatus.OK.value(), ResponseMessage.SUCCESS.getMessage());
+        ApiResponse response = new ApiResponse(HttpStatus.OK.value(), ResponseMessage.SUCCESS.getValue());
         return ResponseEntity.ok(response);
     }
 }
