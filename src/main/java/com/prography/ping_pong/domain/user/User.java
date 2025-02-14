@@ -11,12 +11,14 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Table(name = "member")
 @Entity
 @Getter
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
 
@@ -36,4 +38,8 @@ public class User {
     @NotNull
     @Enumerated(EnumType.STRING)
     private UserStatus status;
+
+    public User(long fakerId, String name, String email, UserStatus status) {
+        this(null, fakerId, name, email, status);
+    }
 }
