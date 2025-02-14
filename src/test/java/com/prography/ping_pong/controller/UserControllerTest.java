@@ -7,7 +7,6 @@ import com.prography.ping_pong.common.BaseControllerTest;
 import com.prography.ping_pong.domain.user.User;
 import com.prography.ping_pong.domain.user.UserStatus;
 import com.prography.ping_pong.dto.request.user.UserInitializeRequest;
-import com.prography.ping_pong.dto.response.ApiBodyResponse;
 import com.prography.ping_pong.dto.response.ApiResponse;
 import com.prography.ping_pong.repository.UserRepository;
 import com.prography.ping_pong.view.ResponseMessage;
@@ -19,9 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
 class UserControllerTest extends BaseControllerTest {
-
-    @Autowired
-    private UserRepository userRepository;
 
     @DisplayName("유저를 초기화한다")
     @Test
@@ -60,8 +56,6 @@ class UserControllerTest extends BaseControllerTest {
                 .queryParam("page", 1)
                 .when().get("/user")
                 .then()
-                .statusCode(HttpStatus.OK.value())
-                .extract()
-                .as(ApiBodyResponse.class);
+                .statusCode(HttpStatus.OK.value());
     }
 }

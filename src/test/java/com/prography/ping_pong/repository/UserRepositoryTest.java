@@ -44,8 +44,8 @@ class UserRepositoryTest extends BaseRepositoryTest {
         Page<User> users = userRepository.findAllByOrderByIdAsc(pageRequest);
 
         assertAll(
-                () -> assertThat(users.getContent()).hasSize(1),
-                () -> assertThat(users.getContent().get(0).getId()).isEqualTo(2L)
+                () -> assertThat(users.toList()).hasSize(1),
+                () -> assertThat(users.toList().get(0).getId()).isEqualTo(user2.getId())
         );
     }
 }

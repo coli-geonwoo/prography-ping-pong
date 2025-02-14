@@ -18,9 +18,6 @@ class UserServiceTest extends BaseServiceTest {
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private UserRepository userRepository;
-
     @DisplayName("페이징된 유저 목록을 조회한다")
     @Test
     void findAllUsers() {

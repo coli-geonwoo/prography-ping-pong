@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +29,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserInitializeClient userInitializeClient;
 
+    @Transactional
     public ApiResponse initialize(UserInitializeRequest userInitializeRequest) {
         truncateAllData();
         FakerRequest fakerRequest = new FakerRequest(userInitializeRequest.seed(), userInitializeRequest.quantity());
@@ -58,6 +60,7 @@ public class UserService {
         userRepository.deleteAllWithFlush(users);
     }
 
+    @Transactional(readOnly = true)
     public UserPageResponse findAll(Pageable pageable) {
         Page<User> foundUsers = userRepository.findAllByOrderByIdAsc(pageable);
         return new UserPageResponse(foundUsers);

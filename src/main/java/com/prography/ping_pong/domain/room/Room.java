@@ -13,12 +13,14 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Room extends BaseEntity {
 
     @Id
@@ -40,4 +42,8 @@ public class Room extends BaseEntity {
     @NotNull
     @Enumerated(EnumType.STRING)
     private RoomStatus status;
+
+    public Room(String title, User host, RoomType roomType) {
+        this(null, title, host, roomType, RoomStatus.WAIT);
+    }
 }

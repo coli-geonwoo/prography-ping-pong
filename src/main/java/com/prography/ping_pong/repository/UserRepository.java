@@ -11,10 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
+    Page<User> findAllByOrderByIdAsc(Pageable pageable);
+
     @Query("DELETE FROM User user WHERE user IN :users")
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
     void deleteAllWithFlush(List<User> users);
-
-    Page<User> findAllByOrderByIdAsc(Pageable pageable);
 }
