@@ -1,4 +1,4 @@
-package com.prography.ping_pong.service.user.client;
+package com.prography.ping_pong.service.user;
 
 import com.prography.ping_pong.domain.UserRoom;
 import com.prography.ping_pong.domain.room.Room;
@@ -9,6 +9,9 @@ import com.prography.ping_pong.dto.response.ApiResponse;
 import com.prography.ping_pong.repository.RoomRepository;
 import com.prography.ping_pong.repository.UserRepository;
 import com.prography.ping_pong.repository.UserRoomRepository;
+import com.prography.ping_pong.service.user.client.FakerUserDetail;
+import com.prography.ping_pong.service.user.client.FakerUserDetails;
+import com.prography.ping_pong.service.user.client.UserInitializeClient;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,7 +30,7 @@ public class UserService {
         FakerRequest fakerRequest = new FakerRequest(userInitializeRequest.seed(), userInitializeRequest.quantity());
         FakerUserDetails userDetails = userInitializeClient.getUserDetails(fakerRequest);
         List<User> users = mapToUsers(userDetails.getFakerUserDetails());
-        userRepository.saveAll(users);
+        userRepository.saveAll(users); //TODO 벌크 쿼리로 변경
         return ApiResponse.ok();
     }
 
