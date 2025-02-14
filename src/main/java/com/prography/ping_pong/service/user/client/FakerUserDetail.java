@@ -1,6 +1,7 @@
 package com.prography.ping_pong.service.user.client;
 
 import com.prography.ping_pong.domain.user.UserStatus;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 
@@ -18,6 +19,7 @@ public class FakerUserDetail {
     @NotBlank
     private final UserStatus status;
 
+    @Email
     @NotBlank
     private final String email;
 
