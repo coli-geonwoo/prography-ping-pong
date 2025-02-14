@@ -1,5 +1,6 @@
 package com.prography.ping_pong.config;
 
+import com.prography.ping_pong.exception.handler.FakerApiErrorHandler;
 import java.time.Duration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,7 +17,8 @@ public class UserClientConfig {
     @Bean
     public RestClient.Builder restClientBuilder() {
         return RestClient.builder()
-                .requestFactory(clientHttpRequestFactory());
+                .requestFactory(clientHttpRequestFactory())
+                .defaultStatusHandler(new FakerApiErrorHandler());
     }
 
     private ClientHttpRequestFactory clientHttpRequestFactory() {
