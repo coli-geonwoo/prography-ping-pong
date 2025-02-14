@@ -11,5 +11,5 @@ public enum ResponseMessage {
     SERVER_ERROR("에러가 발생했습니다.")
     ;
 
-    private final String message;
+    private final String value;
 }
