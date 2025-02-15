@@ -313,7 +313,6 @@ class RoomServiceTest extends BaseServiceTest {
                 .hasMessage(ResponseMessage.CLIENT_ERROR.getValue());
     }
 
-
     @DisplayName("방 나가기 시나리오 테스트")
     @TestFactory
     Stream<DynamicTest> exitRoom() {
