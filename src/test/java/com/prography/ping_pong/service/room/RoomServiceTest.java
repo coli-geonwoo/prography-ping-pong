@@ -362,4 +362,97 @@ class RoomServiceTest extends BaseServiceTest {
                 })
         );
     }
+
+    @DisplayName("게임을 시작할 수 있다")
+    @Test
+    void startRoom() {
+        User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User user = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
+        User savedHost = userRepository.save(host);
+        User savedUser = userRepository.save(user);
+
+        Room room = new Room("title", savedHost, RoomType.SINGLE);
+        Room savedRoom = roomRepository.save(room);
+
+        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
+        userRoomRepository.save(userRoom1);
+        userRoomRepository.save(userRoom2);
+
+        roomService.startRoom(host.getId(), savedRoom.getId());
+
+        Room startedRoom = roomRepository.findById(savedRoom.getId()).get();
+        assertThat(startedRoom.getStatus()).isEqualTo(RoomStatus.PROGRESS);
+    }
+
+    @DisplayName("방장이 아니면 게임을 시작할 수 없다")
+    @Test
+    void canNotStartRoomWhenUserIsNotHost() {
+        User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User user = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
+        User savedHost = userRepository.save(host);
+        User savedUser = userRepository.save(user);
+
+        Room room = new Room("title", savedHost, RoomType.SINGLE);
+        Room savedRoom = roomRepository.save(room);
+
+        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
+        userRoomRepository.save(userRoom1);
+        userRoomRepository.save(userRoom2);
+
+        assertThatThrownBy(() -> roomService.startRoom(savedUser.getId(), savedRoom.getId()))
+                .isInstanceOf(PingPongClientErrorException.class)
+                .hasMessage(ResponseMessage.CLIENT_ERROR.getValue());
+    }
+
+    @DisplayName("인원이 모두 차지 않았다면 게임을 시작할 수 없다")
+    @Test
+    void canNotStartRoomWhenRoomIsNotFull() {
+        User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User savedHost = userRepository.save(host);
+
+        Room room = new Room("title", savedHost, RoomType.SINGLE);
+        Room savedRoom = roomRepository.save(room);
+
+        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
+        userRoomRepository.save(userRoom1);
+
+        assertThatThrownBy(() -> roomService.startRoom(savedHost.getId(), savedRoom.getId()))
+                .isInstanceOf(PingPongClientErrorException.class)
+                .hasMessage(ResponseMessage.CLIENT_ERROR.getValue());
+    }
+
+    @DisplayName("이미 시작한 방은 시작할 수 없다")
+    @ParameterizedTest
+    @EnumSource(value = RoomStatus.class, mode = EnumSource.Mode.EXCLUDE, names = "WAIT")
+    void canNotStartRoomWhenRoomIsNotWait(RoomStatus notWaitStatus) {
+        User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User user = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
+        User savedHost = userRepository.save(host);
+        User savedUser = userRepository.save(user);
+
+        Room room = new Room(null, "title", savedHost, RoomType.SINGLE, notWaitStatus);
+        Room savedRoom = roomRepository.save(room);
+
+        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
+        userRoomRepository.save(userRoom1);
+        userRoomRepository.save(userRoom2);
+
+        assertThatThrownBy(() -> roomService.startRoom(savedHost.getId(), savedRoom.getId()))
+                .isInstanceOf(PingPongClientErrorException.class)
+                .hasMessage(ResponseMessage.CLIENT_ERROR.getValue());
+    }
+
+    @DisplayName("존재하지 않는 방을 시작할 수 없다")
+    @Test
+    void canNotStartRoomWhenNotExistingRoom() {
+        User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User savedHost = userRepository.save(host);
+
+        assertThatThrownBy(() -> roomService.startRoom(host.getId(), 100L))
+                .isInstanceOf(PingPongClientErrorException.class)
+                .hasMessage(ResponseMessage.CLIENT_ERROR.getValue());
+    }
 }
