@@ -14,6 +14,7 @@ import com.prography.ping_pong.exception.errorcode.ClientErrorCode;
 import com.prography.ping_pong.repository.RoomRepository;
 import com.prography.ping_pong.repository.UserRepository;
 import com.prography.ping_pong.repository.UserRoomRepository;
+import com.prography.ping_pong.service.userroom.UserRoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,20 +27,19 @@ public class RoomService {
 
     private final UserRepository userRepository;
     private final RoomRepository roomRepository;
-    private final UserRoomRepository userRoomRepository;
-    private final TeamOrganizer teamOrganizer;
+    private final UserRoomService userRoomService;
 
     @Transactional
     public RoomCreateResponse createRoom(RoomCreateRequest roomCreateRequest) {
         long hostId = roomCreateRequest.userId();
         User host = findUserById(hostId);
-        if (!canParticipate(host)) {
+        if (!userRoomService.canParticipate(host)) {
             throw new PingPongClientErrorException(ClientErrorCode.INVALID_REQUEST);
         }
 
         Room room = roomCreateRequest.toRoom(host);
         Room savedRoom = roomRepository.save(room);
-        attend(host, room);
+        userRoomService.attend(host, room);
         return new RoomCreateResponse(savedRoom);
     }
 
@@ -47,24 +47,8 @@ public class RoomService {
     public RoomAttendResponse attendRoom(long userId, long roomId) {
         User user = findUserById(userId);
         Room room = findRoomById(roomId);
-        attend(user, room);
+        userRoomService.attend(user, room);
         return new RoomAttendResponse(userId, roomId);
-    }
-
-    private void attend(User user, Room room) {
-        long participateCount = userRoomRepository.countByRoomId(room.getId());
-        if (!(canParticipate(user) && room.isAttendAble(participateCount))) {
-            throw new PingPongClientErrorException(ClientErrorCode.INVALID_REQUEST);
-        }
-
-        Team team = teamOrganizer.organize(room.getRoomType(), participateCount);
-        UserRoom userRoom = new UserRoom(user, room, team);
-        userRoomRepository.save(userRoom);
-    }
-
-    private boolean canParticipate(User user) {
-        boolean alreadyParticipated = userRoomRepository.existsByUserId(user.getId());
-        return user.isActive() && !alreadyParticipated;
     }
 
     @Transactional(readOnly = true)
