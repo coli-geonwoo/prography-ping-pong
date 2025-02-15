@@ -1,8 +1,8 @@
 package com.prography.ping_pong.repository;
 
-import com.prography.ping_pong.domain.UserRoom;
+import com.prography.ping_pong.domain.userroom.Team;
+import com.prography.ping_pong.domain.userroom.UserRoom;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -13,6 +13,8 @@ public interface UserRoomRepository extends JpaRepository<UserRoom, Long> {
     boolean existsByUserId(long userId);
 
     long countByRoomId(long roomId);
+
+    long countByRoomIdAndTeam(long roomId, Team team);
 
     @Query("DELETE FROM UserRoom userRoom WHERE userRoom IN :userRooms")
     @Modifying(clearAutomatically = true, flushAutomatically = true)

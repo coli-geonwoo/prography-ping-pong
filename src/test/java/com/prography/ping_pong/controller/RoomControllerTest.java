@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prography.ping_pong.common.BaseControllerTest;
-import com.prography.ping_pong.domain.Team;
-import com.prography.ping_pong.domain.UserRoom;
+import com.prography.ping_pong.domain.userroom.Team;
+import com.prography.ping_pong.domain.userroom.UserRoom;
 import com.prography.ping_pong.domain.room.Room;
 import com.prography.ping_pong.domain.room.RoomType;
 import com.prography.ping_pong.domain.user.User;
