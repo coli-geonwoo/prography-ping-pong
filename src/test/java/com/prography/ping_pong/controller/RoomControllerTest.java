@@ -179,7 +179,7 @@ class RoomControllerTest extends BaseControllerTest {
                 .extract()
                 .as(ApiResponse.class);
 
-        boolean exists = userRoomRepository.existsByUserId(savedUser2.getId());
+        boolean exists = userRoomRepository.findByUserId(savedUser2.getId()).isPresent();
 
         assertAll(
                 () -> assertThat(response.code()).isEqualTo(HttpStatus.OK.value()),

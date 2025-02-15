@@ -91,7 +91,7 @@ class RoomServiceTest extends BaseServiceTest {
         roomService.createRoom(request);
 
         long roomCount = roomRepository.count();
-        boolean exists = userRoomRepository.existsByUserId(user.getId());
+        boolean exists = userRoomRepository.findByUserId(user.getId()).isPresent();
         assertAll(
                 () -> assertThat(roomCount).isOne(),
                 () -> assertThat(exists).isTrue()
