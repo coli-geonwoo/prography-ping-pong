@@ -15,6 +15,8 @@ import com.prography.ping_pong.exception.errorcode.ClientErrorCode;
 import com.prography.ping_pong.repository.RoomRepository;
 import com.prography.ping_pong.repository.UserRepository;
 import com.prography.ping_pong.service.userroom.UserRoomService;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,10 +28,12 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class RoomService {
 
+    private static final long PING_PONG_GAME_INTERVAL_MINUTES = 1L;
+
     private final UserRepository userRepository;
     private final RoomRepository roomRepository;
     private final UserRoomService userRoomService;
-    private final RoomFinishScheduler roomFinishScheduler;
+    private final TaskScheduler taskScheduler;
 
     @Transactional
     public RoomCreateResponse createRoom(RoomCreateRequest roomCreateRequest) {
@@ -83,16 +87,20 @@ public class RoomService {
     }
 
     @Transactional
-    public RoomStartResponse startRoom(RoomStartRequest request, long roomId) {
-        long userId = request.userId();
+    public RoomStartResponse startRoom(long userId, long roomId) {
         Room room = findRoomById(roomId);
 
         if (!(room.isHost(userId) && room.isWait() && userRoomService.isFull(room))) {
             throw new PingPongClientErrorException(ClientErrorCode.INVALID_REQUEST);
         }
         room.start();
-        roomFinishScheduler.schedule(room);
+        scheduleFinish(room);
         return new RoomStartResponse(room);
+    }
+
+    private void scheduleFinish(Room room) {
+        Instant reserveTime = Instant.now().plus(PING_PONG_GAME_INTERVAL_MINUTES, ChronoUnit.MINUTES);
+        taskScheduler.schedule(() -> roomRepository.updateRoomStatusToFinish(room.getId()), reserveTime);
     }
 
     private Room findRoomById(long roomId) {

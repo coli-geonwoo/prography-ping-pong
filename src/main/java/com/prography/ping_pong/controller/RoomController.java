@@ -67,7 +67,7 @@ public class RoomController {
             @RequestBody RoomStartRequest request,
             @PathVariable(name = "roomId") long roomId
     ) {
-        roomService.startRoom(request, roomId);
+        roomService.startRoom(request.userId(), roomId);
         ApiResponse response = ApiResponse.ok();
         return ResponseEntity.ok(response);
     }
