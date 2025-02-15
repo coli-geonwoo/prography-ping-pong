@@ -1,5 +1,6 @@
 package com.prography.ping_pong.controller;
 
+import com.prography.ping_pong.dto.request.room.RoomAttendRequest;
 import com.prography.ping_pong.dto.request.room.RoomCreateRequest;
 import com.prography.ping_pong.dto.response.ApiBodyResponse;
 import com.prography.ping_pong.dto.response.ApiResponse;
@@ -26,6 +27,16 @@ public class RoomController {
     @PostMapping("/room")
     public ResponseEntity<ApiResponse> createRoom(@RequestBody RoomCreateRequest request) {
         roomService.createRoom(request);
+        ApiResponse response = ApiResponse.ok();
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/room/attention/{roomId}")
+    public ResponseEntity<ApiResponse> attendRoom(
+            @PathVariable(name = "roomId") long roomId,
+            @RequestBody RoomAttendRequest request
+    ) {
+        roomService.attendRoom(request.userId(), roomId);
         ApiResponse response = ApiResponse.ok();
         return ResponseEntity.ok(response);
     }

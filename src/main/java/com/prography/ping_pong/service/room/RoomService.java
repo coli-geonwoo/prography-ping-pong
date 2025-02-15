@@ -5,6 +5,7 @@ import com.prography.ping_pong.domain.UserRoom;
 import com.prography.ping_pong.domain.room.Room;
 import com.prography.ping_pong.domain.user.User;
 import com.prography.ping_pong.dto.request.room.RoomCreateRequest;
+import com.prography.ping_pong.dto.response.room.RoomAttendResponse;
 import com.prography.ping_pong.dto.response.room.RoomCreateResponse;
 import com.prography.ping_pong.dto.response.room.RoomDetailResponse;
 import com.prography.ping_pong.dto.response.room.RoomPageResponse;
@@ -38,11 +39,19 @@ public class RoomService {
 
         Room room = roomCreateRequest.toRoom(host);
         Room savedRoom = roomRepository.save(room);
-        attendRoom(host, room);
+        attend(host, room);
         return new RoomCreateResponse(savedRoom);
     }
 
-    public void attendRoom(User user, Room room) {
+    @Transactional
+    public RoomAttendResponse attendRoom(long userId, long roomId) {
+        User user = findUserById(userId);
+        Room room = findRoomById(roomId);
+        attend(user, room);
+        return new RoomAttendResponse(userId, roomId);
+    }
+
+    private void attend(User user, Room room) {
         long participateCount = userRoomRepository.countByRoomId(room.getId());
         if (!(canParticipate(user) && room.isAttendAble(participateCount))) {
             throw new PingPongClientErrorException(ClientErrorCode.INVALID_REQUEST);
