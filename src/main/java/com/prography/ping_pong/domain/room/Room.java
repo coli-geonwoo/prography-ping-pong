@@ -47,6 +47,10 @@ public class Room extends BaseEntity {
         this(null, title, host, roomType, RoomStatus.WAIT);
     }
 
+    public boolean isWait() {
+        return status.isWait();
+    }
+
     public boolean isAttendAble(long participantCount) {
         return status.isWait() && !roomType.isFull(participantCount);
     }
