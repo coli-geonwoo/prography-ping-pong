@@ -2,6 +2,7 @@ package com.prography.ping_pong.common;
 
 import com.prography.ping_pong.repository.RoomRepository;
 import com.prography.ping_pong.repository.UserRepository;
+import com.prography.ping_pong.repository.UserRoomRepository;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +19,9 @@ public abstract class BaseControllerTest {
 
     @Autowired
     protected RoomRepository roomRepository;
+
+    @Autowired
+    protected UserRoomRepository userRoomRepository;
 
     @LocalServerPort
     private int port;

@@ -1,5 +1,7 @@
 package com.prography.ping_pong.service.room;
 
+import com.prography.ping_pong.domain.Team;
+import com.prography.ping_pong.domain.UserRoom;
 import com.prography.ping_pong.domain.room.Room;
 import com.prography.ping_pong.domain.user.User;
 import com.prography.ping_pong.dto.request.room.RoomCreateRequest;
@@ -24,23 +26,37 @@ public class RoomService {
     private final UserRepository userRepository;
     private final RoomRepository roomRepository;
     private final UserRoomRepository userRoomRepository;
+    private final TeamOrganizer teamOrganizer;
 
     @Transactional
     public RoomCreateResponse createRoom(RoomCreateRequest roomCreateRequest) {
+        //방을 생성하고 참여한다.
         long userId = roomCreateRequest.userId();
         User user = findUserById(userId);
-        if (!canCreate(user)) {
+        if (!canParticipate(user)) {
             throw new PingPongClientErrorException(ClientErrorCode.INVALID_REQUEST);
         }
 
         Room room = roomCreateRequest.toRoom(user);
         Room savedRoom = roomRepository.save(room);
+        attendRoom(user, room);
         return new RoomCreateResponse(savedRoom);
     }
 
-    private boolean canCreate(User user) {
-        boolean alreadyAttended = userRoomRepository.existsByUserId(user.getId());
-        return user.isActive() && !alreadyAttended;
+    public void attendRoom(User user, Room room) {
+        long participateCount = userRoomRepository.countByRoomId(room.getId());
+        if (!(canParticipate(user) && room.isAttendAble(participateCount))) {
+            throw new PingPongClientErrorException(ClientErrorCode.INVALID_REQUEST);
+        }
+
+        Team team = teamOrganizer.organize(room.getRoomType(), participateCount);
+        UserRoom userRoom = new UserRoom(user, room, team);
+        userRoomRepository.save(userRoom);
+    }
+
+    private boolean canParticipate(User user) {
+        boolean alreadyParticipated = userRoomRepository.existsByUserId(user.getId());
+        return user.isActive() && !alreadyParticipated;
     }
 
     @Transactional(readOnly = true)
