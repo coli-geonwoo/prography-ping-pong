@@ -27,7 +27,7 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private long fakerId;
+    private long fakerId; //TODO unique 설정
 
     @NotBlank
     private String name;
@@ -42,5 +42,9 @@ public class User extends BaseEntity {
 
     public User(long fakerId, String name, String email, UserStatus status) {
         this(null, fakerId, name, email, status);
+    }
+
+    public boolean isActive() {
+        return this.status.isActive();
     }
 }

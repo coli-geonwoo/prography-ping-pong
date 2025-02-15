@@ -6,4 +6,8 @@ public enum UserStatus {
     ACTIVE,
     NON_ACTIVE,
     ;
+
+    public boolean isActive() {
+        return this == ACTIVE;
+    }
 }

@@ -4,19 +4,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prography.ping_pong.common.BaseControllerTest;
+import com.prography.ping_pong.domain.Team;
+import com.prography.ping_pong.domain.UserRoom;
 import com.prography.ping_pong.domain.room.Room;
 import com.prography.ping_pong.domain.room.RoomType;
 import com.prography.ping_pong.domain.user.User;
 import com.prography.ping_pong.domain.user.UserStatus;
+import com.prography.ping_pong.dto.request.room.RoomAttendRequest;
+import com.prography.ping_pong.dto.request.room.RoomCreateRequest;
 import com.prography.ping_pong.dto.response.ApiResponse;
-import com.prography.ping_pong.repository.RoomRepository;
-import com.prography.ping_pong.repository.UserRepository;
 import com.prography.ping_pong.view.ResponseMessage;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.http.HttpStatus;
 
 class RoomControllerTest extends BaseControllerTest {
@@ -76,5 +79,136 @@ class RoomControllerTest extends BaseControllerTest {
                 .when().get("/room")
                 .then()
                 .statusCode(HttpStatus.OK.value());
+    }
+
+    @DisplayName("방을 생성할 수 있다")
+    @Test
+    void createRoom() {
+        User user = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User savedUser = userRepository.save(user);
+        RoomCreateRequest request = new RoomCreateRequest(savedUser.getId(), RoomType.SINGLE, "title");
+
+        ApiResponse response = RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(request)
+                .when().post("/room")
+                .then()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .as(ApiResponse.class);
+
+        long count = roomRepository.count();
+
+        assertAll(
+                () -> assertThat(response.code()).isEqualTo(HttpStatus.OK.value()),
+                () -> assertThat(response.message()).isEqualTo(ResponseMessage.SUCCESS.getValue()),
+                () -> assertThat(count).isOne()
+        );
+    }
+
+    @DisplayName("없는 유저를 호스트로 방을 생성할 수 없다")
+    @Test
+    void canNotCreateRoomWithNonExistingUser() {
+        RoomCreateRequest request = new RoomCreateRequest(1L, RoomType.SINGLE, "title");
+
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(request)
+                .when().post("/room")
+                .then()
+                .statusCode(HttpStatus.CREATED.value());
+    }
+
+    @DisplayName("유저가 ACTIVE 상태가 아니라면 방 생성에 실패한다.")
+    @ParameterizedTest
+    @EnumSource(value = UserStatus.class, mode = EnumSource.Mode.EXCLUDE, names = "ACTIVE")
+    void canNotCreateRoomWithNonActiveUser(UserStatus nonActiveStatus) {
+        User user = new User(1L, "name1", "email1@email.com", nonActiveStatus);
+        User savedUser = userRepository.save(user);
+        RoomCreateRequest request = new RoomCreateRequest(savedUser.getId(), RoomType.SINGLE, "title");
+
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(request)
+                .when().post("/room")
+                .then()
+                .statusCode(HttpStatus.CREATED.value());
+    }
+
+    @DisplayName("유저가 이미 참여한 방이 있다면 방 생성에 실패한다.")
+    @Test
+    void canNotCreateRoomWithAlreadyParticipatedUser() {
+        User user = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User savedUser = userRepository.save(user);
+        Room dummy = new Room("room1", savedUser, RoomType.SINGLE);
+        Room savedRoom = roomRepository.save(dummy);
+        UserRoom userRoom = new UserRoom(user, dummy, Team.RED);
+        userRoomRepository.save(userRoom);
+
+        RoomCreateRequest request = new RoomCreateRequest(savedUser.getId(), RoomType.SINGLE, "title");
+
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(request)
+                .when().post("/room")
+                .then()
+                .statusCode(HttpStatus.CREATED.value());
+    }
+
+    @DisplayName("방에 참여할 수 있다")
+    @Test
+    void attendRoom() {
+        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User user2 = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
+        User savedUser1 = userRepository.save(user1);
+        User savedUser2 = userRepository.save(user2);
+        Room dummy = new Room("room1", savedUser1, RoomType.SINGLE);
+        Room savedRoom = roomRepository.save(dummy);
+        UserRoom userRoom = new UserRoom(savedUser1, dummy, Team.RED);
+        userRoomRepository.save(userRoom);
+
+        RoomAttendRequest request = new RoomAttendRequest(savedUser2.getId());
+
+        ApiResponse response = RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(request)
+                .pathParam("roomId", savedRoom.getId())
+                .when().post("/room/attention/{roomId}")
+                .then()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .as(ApiResponse.class);
+
+        boolean exists = userRoomRepository.existsByUserId(savedUser2.getId());
+
+        assertAll(
+                () -> assertThat(response.code()).isEqualTo(HttpStatus.OK.value()),
+                () -> assertThat(response.message()).isEqualTo(ResponseMessage.SUCCESS.getValue()),
+                () -> assertThat(exists).isTrue()
+        );
+    }
+
+    @DisplayName("유저가 ACTIVE 하지 않다면 방에 참여할 수 없다")
+    @ParameterizedTest
+    @EnumSource(value = UserStatus.class, mode = EnumSource.Mode.EXCLUDE, names = "ACTIVE")
+    void canNotAttendRoomWhenUserIsNotActive(UserStatus nonActiveStatus) {
+        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User nonActiveUser = new User(2L, "name2", "email2@email.com", nonActiveStatus);
+        User savedUser1 = userRepository.save(user1);
+        User savedNonActiveUser = userRepository.save(nonActiveUser);
+        Room dummy = new Room("room1", savedUser1, RoomType.SINGLE);
+        Room savedRoom = roomRepository.save(dummy);
+        UserRoom userRoom = new UserRoom(savedUser1, dummy, Team.RED);
+        userRoomRepository.save(userRoom);
+
+        RoomAttendRequest request = new RoomAttendRequest(savedNonActiveUser.getId());
+
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(request)
+                .pathParam("roomId", savedRoom.getId())
+                .when().post("/room/attention/{roomId}")
+                .then()
+                .statusCode(HttpStatus.CREATED.value());
     }
 }

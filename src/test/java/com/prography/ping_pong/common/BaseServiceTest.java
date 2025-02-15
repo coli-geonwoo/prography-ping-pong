@@ -2,6 +2,7 @@ package com.prography.ping_pong.common;
 
 import com.prography.ping_pong.repository.RoomRepository;
 import com.prography.ping_pong.repository.UserRepository;
+import com.prography.ping_pong.repository.UserRoomRepository;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,4 +16,7 @@ public abstract class BaseServiceTest {
 
     @Autowired
     protected UserRepository userRepository;
+
+    @Autowired
+    protected UserRoomRepository userRoomRepository;
 }

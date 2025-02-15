@@ -5,4 +5,8 @@ public enum RoomStatus {
     PROGRESS,
     FINISH,
     ;
+
+    public boolean isWait() {
+        return this == WAIT;
+    }
 }
