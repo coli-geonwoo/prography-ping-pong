@@ -1,7 +1,7 @@
 package com.prography.ping_pong.service.room;
 
-import com.prography.ping_pong.domain.userroom.Team;
 import com.prography.ping_pong.domain.room.RoomType;
+import com.prography.ping_pong.domain.userroom.Team;
 import com.prography.ping_pong.exception.custom.PingPongClientErrorException;
 import com.prography.ping_pong.exception.errorcode.ClientErrorCode;
 import org.springframework.stereotype.Component;
@@ -22,7 +22,7 @@ public class TeamOrganizer {
             throw new PingPongClientErrorException(ClientErrorCode.INVALID_REQUEST);
         }
 
-        if(roomType.isLessThanOneTeamCapacity(firstTeamParticipantCount)) {
+        if (roomType.isLessThanOneTeamCapacity(firstTeamParticipantCount)) {
             return FISRT_ORDER_TEAM;
         }
         return SECOND_ORDER_TEAM;

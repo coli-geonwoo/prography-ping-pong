@@ -45,6 +45,24 @@ public class UserRoomService {
         return user.isActive() && !alreadyParticipated;
     }
 
+    @Transactional(readOnly = true)
+    public UserRoom findByUserIdAndRoomId(long userId, long roomId) {
+        return userRoomRepository.findByUserIdAndRoomId(userId, roomId)
+                .orElseThrow(() -> new PingPongClientErrorException(ClientErrorCode.INVALID_REQUEST));
+    }
+
+    @Transactional
+    public void changeTeam(long userId, long roomId) {
+        UserRoom userRoom = findByUserIdAndRoomId(userId, roomId);
+        Team oppositeTeam = userRoom.getOppositeTeam();
+        long oppositeTeamUserCount = userRoomRepository.countByRoomIdAndTeam(roomId, oppositeTeam);
+
+        if(!userRoom.canChangeTeam(oppositeTeamUserCount)) {
+            throw new PingPongClientErrorException(ClientErrorCode.INVALID_REQUEST);
+        }
+        userRoom.changeTeam();
+    }
+
     @Transactional
     public void exitAllRoomUsers(long roomId) {
         List<UserRoom> allRoomUsers = userRoomRepository.findAllByRoomId(roomId);
@@ -54,11 +72,5 @@ public class UserRoomService {
     @Transactional
     public void exitRoomUser(UserRoom userRoom) {
         userRoomRepository.delete(userRoom);
-    }
-
-    @Transactional(readOnly = true)
-    public UserRoom findByUserIdAndRoomId(long userId, long roomId) {
-        return userRoomRepository.findByUserIdAndRoomId(userId, roomId)
-                .orElseThrow(() -> new PingPongClientErrorException(ClientErrorCode.INVALID_REQUEST));
     }
 }
