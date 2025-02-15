@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prography.ping_pong.common.BaseRepositoryTest;
 import com.prography.ping_pong.domain.room.Room;
+import com.prography.ping_pong.domain.room.RoomStatus;
 import com.prography.ping_pong.domain.room.RoomType;
 import com.prography.ping_pong.domain.user.User;
 import com.prography.ping_pong.domain.user.UserStatus;

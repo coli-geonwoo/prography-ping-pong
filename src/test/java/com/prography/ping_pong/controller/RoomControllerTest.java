@@ -15,7 +15,9 @@ import com.prography.ping_pong.domain.user.UserStatus;
 import com.prography.ping_pong.dto.request.room.RoomAttendRequest;
 import com.prography.ping_pong.dto.request.room.RoomCreateRequest;
 import com.prography.ping_pong.dto.request.room.RoomExitRequest;
+import com.prography.ping_pong.dto.request.room.RoomStartRequest;
 import com.prography.ping_pong.dto.response.ApiResponse;
+import com.prography.ping_pong.dto.response.room.RoomStartResponse;
 import com.prography.ping_pong.exception.custom.PingPongClientErrorException;
 import com.prography.ping_pong.view.ResponseMessage;
 import io.restassured.RestAssured;
@@ -329,6 +331,140 @@ class RoomControllerTest extends BaseControllerTest {
                 .body(request)
                 .pathParam("roomId", 1000L)
                 .when().post("/room/out/{roomId}")
+                .then()
+                .statusCode(HttpStatus.CREATED.value());
+    }
+
+    @DisplayName("게임을 시작할 수 있다")
+    @Test
+    void startRoom() {
+        User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User user = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
+        User savedHost = userRepository.save(host);
+        User savedUser = userRepository.save(user);
+
+        Room room = new Room("title", savedHost, RoomType.SINGLE);
+        Room savedRoom = roomRepository.save(room);
+
+        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
+        userRoomRepository.save(userRoom1);
+        userRoomRepository.save(userRoom2);
+
+        RoomStartRequest request = new RoomStartRequest(savedHost.getId());
+
+        ApiResponse response = RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(request)
+                .pathParam("roomId", savedRoom.getId())
+                .when().put("/room/start/{roomId}")
+                .then()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .as(ApiResponse.class);
+
+        Room startedRoom = roomRepository.findById(savedRoom.getId()).get();
+
+        assertAll(
+                () -> assertThat(response.code()).isEqualTo(HttpStatus.OK.value()),
+                () -> assertThat(response.message()).isEqualTo(ResponseMessage.SUCCESS.getValue()),
+                () -> assertThat(startedRoom.getStatus()).isEqualTo(RoomStatus.PROGRESS)
+
+        );
+    }
+
+    @DisplayName("방장이 아니면 게임을 시작할 수 없다")
+    @Test
+    void canNotStartRoomWhenUserIsNotHost() {
+        User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User user = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
+        User savedHost = userRepository.save(host);
+        User savedUser = userRepository.save(user);
+
+        Room room = new Room("title", savedHost, RoomType.SINGLE);
+        Room savedRoom = roomRepository.save(room);
+
+        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
+        userRoomRepository.save(userRoom1);
+        userRoomRepository.save(userRoom2);
+
+        RoomStartRequest request = new RoomStartRequest(savedUser.getId());
+
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(request)
+                .pathParam("roomId", savedRoom.getId())
+                .when().put("/room/start/{roomId}")
+                .then()
+                .statusCode(HttpStatus.CREATED.value());
+
+    }
+
+    @DisplayName("인원이 모두 차지 않았다면 게임을 시작할 수 없다")
+    @Test
+    void canNotStartRoomWhenRoomIsNotFull() {
+        User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User savedHost = userRepository.save(host);
+
+        Room room = new Room("title", savedHost, RoomType.SINGLE);
+        Room savedRoom = roomRepository.save(room);
+
+        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
+        userRoomRepository.save(userRoom1);
+
+        RoomStartRequest request = new RoomStartRequest(savedHost.getId());
+
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(request)
+                .pathParam("roomId", savedRoom.getId())
+                .when().put("/room/start/{roomId}")
+                .then()
+                .statusCode(HttpStatus.CREATED.value());
+    }
+
+    @DisplayName("이미 시작한 방은 시작할 수 없다")
+    @ParameterizedTest
+    @EnumSource(value = RoomStatus.class, mode = EnumSource.Mode.EXCLUDE, names = "WAIT")
+    void canNotStartRoomWhenRoomIsNotWait(RoomStatus notWaitStatus) {
+        User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User user = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
+        User savedHost = userRepository.save(host);
+        User savedUser = userRepository.save(user);
+
+        Room room = new Room(null, "title", savedHost, RoomType.SINGLE, notWaitStatus);
+        Room savedRoom = roomRepository.save(room);
+
+        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
+        userRoomRepository.save(userRoom1);
+        userRoomRepository.save(userRoom2);
+
+        RoomStartRequest request = new RoomStartRequest(savedHost.getId());
+
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(request)
+                .pathParam("roomId", savedRoom.getId())
+                .when().put("/room/start/{roomId}")
+                .then()
+                .statusCode(HttpStatus.CREATED.value());
+    }
+
+    @DisplayName("존재하지 않는 방을 시작할 수 없다")
+    @Test
+    void canNotStartRoomWhenNotExistingRoom() {
+        User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User savedHost = userRepository.save(host);
+
+        RoomStartRequest request = new RoomStartRequest(savedHost.getId());
+
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(request)
+                .pathParam("roomId", 100L)
+                .when().put("/room/start/{roomId}")
                 .then()
                 .statusCode(HttpStatus.CREATED.value());
     }

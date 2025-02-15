@@ -59,8 +59,21 @@ public class Room extends BaseEntity {
         return host.isSame(userId);
     }
 
+    public boolean isFull(long firstTeamCount, long secondTeamCount) {
+        long totalCount = firstTeamCount + secondTeamCount;
+        long totalCapacity = roomType.getTotalCapacity();
+        long teamCapacity = roomType.getTeamCapacity();
+        return totalCapacity == totalCount
+                && firstTeamCount == teamCapacity
+                && secondTeamCount == teamCapacity;
+    }
+
     public boolean canExit() {
         return status.isWait();
+    }
+
+    public void start() {
+        this.status = RoomStatus.PROGRESS;
     }
 
     public void finished() {
