@@ -1,6 +1,7 @@
 package com.prography.ping_pong.service.userroom;
 
 import com.prography.ping_pong.domain.room.Room;
+import com.prography.ping_pong.domain.room.RoomType;
 import com.prography.ping_pong.domain.user.User;
 import com.prography.ping_pong.domain.userroom.Team;
 import com.prography.ping_pong.domain.userroom.UserRoom;
@@ -72,5 +73,13 @@ public class UserRoomService {
     @Transactional
     public void exitRoomUser(UserRoom userRoom) {
         userRoomRepository.delete(userRoom);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isFull(Room room) {
+        long roomId = room.getId();
+        long firstOrderTeamCount = userRoomRepository.countByRoomIdAndTeam(roomId, Team.RED);
+        long secondOrderTeamCount = userRoomRepository.countByRoomIdAndTeam(roomId, Team.BLUE);
+        return room.isFull(firstOrderTeamCount, secondOrderTeamCount);
     }
 }

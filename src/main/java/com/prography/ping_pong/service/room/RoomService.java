@@ -4,10 +4,12 @@ import com.prography.ping_pong.domain.room.Room;
 import com.prography.ping_pong.domain.user.User;
 import com.prography.ping_pong.domain.userroom.UserRoom;
 import com.prography.ping_pong.dto.request.room.RoomCreateRequest;
+import com.prography.ping_pong.dto.request.room.RoomStartRequest;
 import com.prography.ping_pong.dto.response.room.RoomAttendResponse;
 import com.prography.ping_pong.dto.response.room.RoomCreateResponse;
 import com.prography.ping_pong.dto.response.room.RoomDetailResponse;
 import com.prography.ping_pong.dto.response.room.RoomPageResponse;
+import com.prography.ping_pong.dto.response.room.RoomStartResponse;
 import com.prography.ping_pong.exception.custom.PingPongClientErrorException;
 import com.prography.ping_pong.exception.errorcode.ClientErrorCode;
 import com.prography.ping_pong.repository.RoomRepository;
@@ -16,6 +18,7 @@ import com.prography.ping_pong.service.userroom.UserRoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +29,7 @@ public class RoomService {
     private final UserRepository userRepository;
     private final RoomRepository roomRepository;
     private final UserRoomService userRoomService;
+    private final RoomFinishScheduler roomFinishScheduler;
 
     @Transactional
     public RoomCreateResponse createRoom(RoomCreateRequest roomCreateRequest) {
@@ -76,6 +80,19 @@ public class RoomService {
             return;
         }
         userRoomService.exitRoomUser(userRoom);
+    }
+
+    @Transactional
+    public RoomStartResponse startRoom(RoomStartRequest request, long roomId) {
+        long userId = request.userId();
+        Room room = findRoomById(roomId);
+
+        if (!(room.isHost(userId) && room.isWait() && userRoomService.isFull(room))) {
+            throw new PingPongClientErrorException(ClientErrorCode.INVALID_REQUEST);
+        }
+        room.start();
+        roomFinishScheduler.schedule(room);
+        return new RoomStartResponse(room);
     }
 
     private Room findRoomById(long roomId) {
