@@ -30,16 +30,15 @@ public class RoomService {
 
     @Transactional
     public RoomCreateResponse createRoom(RoomCreateRequest roomCreateRequest) {
-        //방을 생성하고 참여한다.
-        long userId = roomCreateRequest.userId();
-        User user = findUserById(userId);
-        if (!canParticipate(user)) {
+        long hostId = roomCreateRequest.userId();
+        User host = findUserById(hostId);
+        if (!canParticipate(host)) {
             throw new PingPongClientErrorException(ClientErrorCode.INVALID_REQUEST);
         }
 
-        Room room = roomCreateRequest.toRoom(user);
+        Room room = roomCreateRequest.toRoom(host);
         Room savedRoom = roomRepository.save(room);
-        attendRoom(user, room);
+        attendRoom(host, room);
         return new RoomCreateResponse(savedRoom);
     }
 
