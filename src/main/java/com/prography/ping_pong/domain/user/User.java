@@ -43,4 +43,8 @@ public class User extends BaseEntity {
     public User(long fakerId, String name, String email, UserStatus status) {
         this(null, fakerId, name, email, status);
     }
+
+    public boolean isActive() {
+        return this.status.isActive();
+    }
 }
