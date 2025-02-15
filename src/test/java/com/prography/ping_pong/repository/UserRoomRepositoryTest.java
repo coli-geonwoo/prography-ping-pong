@@ -1,0 +1,86 @@
+package com.prography.ping_pong.repository;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
+
+import com.prography.ping_pong.common.BaseRepositoryTest;
+import com.prography.ping_pong.domain.Team;
+import com.prography.ping_pong.domain.UserRoom;
+import com.prography.ping_pong.domain.room.Room;
+import com.prography.ping_pong.domain.room.RoomType;
+import com.prography.ping_pong.domain.user.User;
+import com.prography.ping_pong.domain.user.UserStatus;
+import java.util.List;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
+class UserRoomRepositoryTest extends BaseRepositoryTest {
+
+    @Autowired
+    private UserRoomRepository userRoomRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private RoomRepository roomRepository;
+
+    @DisplayName("유저가 참여한 방이 있는지 조회할 수 있다")
+    @Test
+    void existsByUserId() {
+        User user = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User savedUser = userRepository.save(user);
+        Room dummy = new Room("room1", savedUser, RoomType.SINGLE);
+        Room savedRoom = roomRepository.save(dummy);
+        UserRoom userRoom = new UserRoom(user, dummy, Team.RED);
+        userRoomRepository.save(userRoom);
+
+        boolean exists = userRoomRepository.existsByUserId(user.getId());
+        boolean nonExists = userRoomRepository.existsByUserId(1000L);
+
+        assertAll(
+                () -> assertThat(exists).isTrue(),
+                () -> assertThat(nonExists).isFalse()
+        );
+    }
+
+
+    @DisplayName("방에 참여한 인원이 몇명인지 카운트 할 수 있다")
+    @Test
+    void countByRoomId() {
+        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User user2 = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
+        User savedUser1 = userRepository.save(user1);
+        User savedUser2 = userRepository.save(user2);
+
+        Room dummy = new Room("room1", savedUser1, RoomType.SINGLE);
+        Room savedRoom = roomRepository.save(dummy);
+
+        UserRoom userRoom1 = new UserRoom(user1, dummy, Team.RED);
+        UserRoom userRoom2 = new UserRoom(user2, dummy, Team.RED);
+        UserRoom savedUserRoom1 = userRoomRepository.save(userRoom1);
+        UserRoom savedUserRoom2 = userRoomRepository.save(userRoom2);
+
+        long count = userRoomRepository.countByRoomId(savedRoom.getId());
+
+        assertThat(count).isEqualTo(2);
+    }
+
+    @DisplayName("배치 쿼리로 전체 UserRoom 데이터를 삭제한다")
+    @Test
+    void deleteAllWithFlush() {
+        User user = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User savedUser = userRepository.save(user);
+        Room dummy = new Room("room1", savedUser, RoomType.SINGLE);
+        Room savedRoom = roomRepository.save(dummy);
+        UserRoom userRoom = new UserRoom(user, dummy, Team.RED);
+        UserRoom savedUserRoom = userRoomRepository.save(userRoom);
+
+        userRoomRepository.deleteAllWithFlush(List.of(savedUserRoom));
+
+        long count = userRoomRepository.count();
+
+        assertThat(count).isZero();
+    }
+}

@@ -12,6 +12,8 @@ public interface UserRoomRepository extends JpaRepository<UserRoom, Long> {
 
     boolean existsByUserId(long userId);
 
+    long countByRoomId(long roomId);
+
     @Query("DELETE FROM UserRoom userRoom WHERE userRoom IN :userRooms")
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
