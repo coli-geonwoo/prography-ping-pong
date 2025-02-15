@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor(access = AccessLevel.PUBLIC)
 public class Room extends BaseEntity {
 
     @Id
@@ -49,5 +49,17 @@ public class Room extends BaseEntity {
 
     public boolean isAttendAble(long participantCount) {
         return status.isWait() && !roomType.isFull(participantCount);
+    }
+
+    public boolean isHost(long userId) {
+        return host.isSame(userId);
+    }
+
+    public boolean canExit() {
+        return status.isWait();
+    }
+
+    public void finished() {
+        this.status = RoomStatus.FINISH;
     }
 }

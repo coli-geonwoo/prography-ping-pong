@@ -1,9 +1,11 @@
 package com.prography.ping_pong.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prography.ping_pong.common.BaseControllerTest;
+import com.prography.ping_pong.domain.room.RoomStatus;
 import com.prography.ping_pong.domain.userroom.Team;
 import com.prography.ping_pong.domain.userroom.UserRoom;
 import com.prography.ping_pong.domain.room.Room;
@@ -12,10 +14,13 @@ import com.prography.ping_pong.domain.user.User;
 import com.prography.ping_pong.domain.user.UserStatus;
 import com.prography.ping_pong.dto.request.room.RoomAttendRequest;
 import com.prography.ping_pong.dto.request.room.RoomCreateRequest;
+import com.prography.ping_pong.dto.request.room.RoomExitRequest;
 import com.prography.ping_pong.dto.response.ApiResponse;
+import com.prography.ping_pong.exception.custom.PingPongClientErrorException;
 import com.prography.ping_pong.view.ResponseMessage;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -179,7 +184,7 @@ class RoomControllerTest extends BaseControllerTest {
                 .extract()
                 .as(ApiResponse.class);
 
-        boolean exists = userRoomRepository.existsByUserId(savedUser2.getId());
+        boolean exists = userRoomRepository.findByUserId(savedUser2.getId()).isPresent();
 
         assertAll(
                 () -> assertThat(response.code()).isEqualTo(HttpStatus.OK.value()),
@@ -208,6 +213,122 @@ class RoomControllerTest extends BaseControllerTest {
                 .body(request)
                 .pathParam("roomId", savedRoom.getId())
                 .when().post("/room/attention/{roomId}")
+                .then()
+                .statusCode(HttpStatus.CREATED.value());
+    }
+
+
+    @DisplayName("방장이 나갈 경우, 모든 회원을 퇴장시킨다")
+    @Test
+    void exitAllUserWhenHostExit() {
+        User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User user = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
+        User savedHost = userRepository.save(host);
+        User savedUser = userRepository.save(user);
+
+        Room room = new Room("title", savedHost, RoomType.SINGLE);
+        Room savedRoom = roomRepository.save(room);
+
+        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
+        userRoomRepository.save(userRoom1);
+        userRoomRepository.save(userRoom2);
+
+        RoomExitRequest request = new RoomExitRequest(savedHost.getId());
+
+        ApiResponse response = RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(request)
+                .pathParam("roomId", savedRoom.getId())
+                .when().post("/room/out/{roomId}")
+                .then()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .as(ApiResponse.class);
+
+        List<UserRoom> allRoomUsers = userRoomRepository.findAllByRoomId(savedRoom.getId());
+
+        assertAll(
+                () -> assertThat(response.code()).isEqualTo(HttpStatus.OK.value()),
+                () -> assertThat(response.message()).isEqualTo(ResponseMessage.SUCCESS.getValue()),
+                () -> assertThat(allRoomUsers).isEmpty()
+        );
+    }
+
+    @DisplayName("방을 나갈 수 있다")
+    @Test
+    void exitUser() {
+        User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User user = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
+        User savedHost = userRepository.save(host);
+        User savedUser = userRepository.save(user);
+
+        Room room = new Room("title", savedHost, RoomType.SINGLE);
+        Room savedRoom = roomRepository.save(room);
+
+        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
+        userRoomRepository.save(userRoom1);
+        userRoomRepository.save(userRoom2);
+
+        RoomExitRequest request = new RoomExitRequest(savedUser.getId());
+
+        ApiResponse response = RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(request)
+                .pathParam("roomId", savedRoom.getId())
+                .when().post("/room/out/{roomId}")
+                .then()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .as(ApiResponse.class);
+
+        List<UserRoom> allRoomUsers = userRoomRepository.findAllByRoomId(savedRoom.getId());
+
+        assertAll(
+                () -> assertThat(response.code()).isEqualTo(HttpStatus.OK.value()),
+                () -> assertThat(response.message()).isEqualTo(ResponseMessage.SUCCESS.getValue()),
+                () -> assertThat(allRoomUsers).hasSize(1)
+        );
+    }
+
+    @DisplayName("방이 이미 시작한 상태라면 나갈 수 없다")
+    @ParameterizedTest
+    @EnumSource(value = RoomStatus.class, mode = EnumSource.Mode.EXCLUDE, names = "WAIT")
+    void canNotExitWhenRoomAlreadyStart(RoomStatus alreadyStartStatus) {
+        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User savedUser1 = userRepository.save(user1);
+
+        Room room = new Room(null, "title", user1, RoomType.SINGLE, alreadyStartStatus);
+        Room savedRoom = roomRepository.save(room);
+
+        UserRoom userRoom1 = new UserRoom(savedUser1, room, Team.RED);
+        userRoomRepository.save(userRoom1);
+
+        RoomExitRequest request = new RoomExitRequest(savedUser1.getId());
+
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(request)
+                .pathParam("roomId", savedRoom.getId())
+                .when().post("/room/out/{roomId}")
+                .then()
+                .statusCode(HttpStatus.CREATED.value());
+    }
+
+    @DisplayName("존재하지 않는 방에 대한 나가기 요청을 할 수 없다")
+    @Test
+    void canNotExitNotExistingRoom() {
+        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User savedUser1 = userRepository.save(user1);
+
+        RoomExitRequest request = new RoomExitRequest(savedUser1.getId());
+
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(request)
+                .pathParam("roomId", 1000L)
+                .when().post("/room/out/{roomId}")
                 .then()
                 .statusCode(HttpStatus.CREATED.value());
     }

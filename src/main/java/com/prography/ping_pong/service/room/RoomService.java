@@ -1,9 +1,8 @@
 package com.prography.ping_pong.service.room;
 
-import com.prography.ping_pong.domain.userroom.Team;
-import com.prography.ping_pong.domain.userroom.UserRoom;
 import com.prography.ping_pong.domain.room.Room;
 import com.prography.ping_pong.domain.user.User;
+import com.prography.ping_pong.domain.userroom.UserRoom;
 import com.prography.ping_pong.dto.request.room.RoomCreateRequest;
 import com.prography.ping_pong.dto.response.room.RoomAttendResponse;
 import com.prography.ping_pong.dto.response.room.RoomCreateResponse;
@@ -13,7 +12,6 @@ import com.prography.ping_pong.exception.custom.PingPongClientErrorException;
 import com.prography.ping_pong.exception.errorcode.ClientErrorCode;
 import com.prography.ping_pong.repository.RoomRepository;
 import com.prography.ping_pong.repository.UserRepository;
-import com.prography.ping_pong.repository.UserRoomRepository;
 import com.prography.ping_pong.service.userroom.UserRoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -61,6 +59,23 @@ public class RoomService {
     public RoomDetailResponse findRoom(long roomId) {
         Room room = findRoomById(roomId);
         return new RoomDetailResponse(room);
+    }
+
+    @Transactional
+    public void exitRoom(long userId, long roomId) {
+        UserRoom userRoom = userRoomService.findByUserIdAndRoomId(userId, roomId);
+        Room room = userRoom.getRoom();
+
+        if (!room.canExit()) {
+            throw new PingPongClientErrorException(ClientErrorCode.INVALID_REQUEST);
+        }
+
+        if (room.isHost(userId)) {
+            room.finished();
+            userRoomService.exitAllRoomUsers(room.getId());
+            return;
+        }
+        userRoomService.exitRoomUser(userRoom);
     }
 
     private Room findRoomById(long roomId) {

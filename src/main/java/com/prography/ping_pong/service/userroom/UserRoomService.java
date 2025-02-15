@@ -8,6 +8,7 @@ import com.prography.ping_pong.exception.custom.PingPongClientErrorException;
 import com.prography.ping_pong.exception.errorcode.ClientErrorCode;
 import com.prography.ping_pong.repository.UserRoomRepository;
 import com.prography.ping_pong.service.room.TeamOrganizer;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +22,8 @@ public class UserRoomService {
 
     @Transactional
     public void attend(User user, Room room) {
-        long participateCount = userRoomRepository.countByRoomId(room.getId());
+        List<UserRoom> allRoomUsers = userRoomRepository.findAllByRoomId(room.getId());
+        long participateCount = allRoomUsers.size();
         if (!(canParticipate(user) && room.isAttendAble(participateCount))) {
             throw new PingPongClientErrorException(ClientErrorCode.INVALID_REQUEST);
         }
@@ -39,7 +41,24 @@ public class UserRoomService {
 
     @Transactional(readOnly = true)
     public boolean canParticipate(User user) {
-        boolean alreadyParticipated = userRoomRepository.existsByUserId(user.getId());
+        boolean alreadyParticipated = userRoomRepository.findByUserId(user.getId()).isPresent();
         return user.isActive() && !alreadyParticipated;
+    }
+
+    @Transactional
+    public void exitAllRoomUsers(long roomId) {
+        List<UserRoom> allRoomUsers = userRoomRepository.findAllByRoomId(roomId);
+        userRoomRepository.deleteAllWithFlush(allRoomUsers);
+    }
+
+    @Transactional
+    public void exitRoomUser(UserRoom userRoom) {
+        userRoomRepository.delete(userRoom);
+    }
+
+    @Transactional(readOnly = true)
+    public UserRoom findByUserIdAndRoomId(long userId, long roomId) {
+        return userRoomRepository.findByUserIdAndRoomId(userId, roomId)
+                .orElseThrow(() -> new PingPongClientErrorException(ClientErrorCode.INVALID_REQUEST));
     }
 }

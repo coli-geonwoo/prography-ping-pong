@@ -19,8 +19,8 @@ import lombok.NoArgsConstructor;
 @Table(name = "member")
 @Entity
 @Getter
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PUBLIC)
 public class User extends BaseEntity {
 
     @Id
@@ -46,5 +46,9 @@ public class User extends BaseEntity {
 
     public boolean isActive() {
         return this.status.isActive();
+    }
+
+    public boolean isSame(long userId) {
+        return this.id == userId;
     }
 }

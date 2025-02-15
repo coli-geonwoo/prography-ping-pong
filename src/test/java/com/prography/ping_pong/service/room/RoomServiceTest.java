@@ -7,18 +7,20 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 import com.prography.ping_pong.common.BaseServiceTest;
-import com.prography.ping_pong.domain.userroom.Team;
-import com.prography.ping_pong.domain.userroom.UserRoom;
 import com.prography.ping_pong.domain.room.Room;
+import com.prography.ping_pong.domain.room.RoomStatus;
 import com.prography.ping_pong.domain.room.RoomType;
 import com.prography.ping_pong.domain.user.User;
 import com.prography.ping_pong.domain.user.UserStatus;
+import com.prography.ping_pong.domain.userroom.Team;
+import com.prography.ping_pong.domain.userroom.UserRoom;
 import com.prography.ping_pong.dto.request.room.RoomCreateRequest;
 import com.prography.ping_pong.dto.response.room.RoomCreateResponse;
 import com.prography.ping_pong.dto.response.room.RoomDetailResponse;
 import com.prography.ping_pong.dto.response.room.RoomPageResponse;
 import com.prography.ping_pong.exception.custom.PingPongClientErrorException;
 import com.prography.ping_pong.view.ResponseMessage;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
@@ -91,7 +93,7 @@ class RoomServiceTest extends BaseServiceTest {
         roomService.createRoom(request);
 
         long roomCount = roomRepository.count();
-        boolean exists = userRoomRepository.existsByUserId(user.getId());
+        boolean exists = userRoomRepository.findByUserId(user.getId()).isPresent();
         assertAll(
                 () -> assertThat(roomCount).isOne(),
                 () -> assertThat(exists).isTrue()
@@ -234,6 +236,129 @@ class RoomServiceTest extends BaseServiceTest {
                     assertThatThrownBy(() -> roomService.attendRoom(savedUser3.getId(), createdRoomId.get()))
                             .isInstanceOf(PingPongClientErrorException.class)
                             .hasMessage(ResponseMessage.CLIENT_ERROR.getValue());
+                })
+        );
+    }
+
+    @DisplayName("방장이 나갈 경우, 모든 회원을 퇴장시킨다")
+    @Test
+    void exitAllUserWhenHostExit() {
+        User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User user = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
+        User savedHost = userRepository.save(host);
+        User savedUser = userRepository.save(user);
+
+        Room room = new Room("title", savedHost, RoomType.SINGLE);
+        Room savedRoom = roomRepository.save(room);
+
+        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
+        userRoomRepository.save(userRoom1);
+        userRoomRepository.save(userRoom2);
+
+        roomService.exitRoom(savedHost.getId(), savedRoom.getId());
+
+        List<UserRoom> allRoomUsers = userRoomRepository.findAllByRoomId(savedRoom.getId());
+        assertThat(allRoomUsers).isEmpty();
+    }
+
+    @DisplayName("방을 나갈 수 있다")
+    @Test
+    void exitUser() {
+        User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User user = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
+        User savedHost = userRepository.save(host);
+        User savedUser = userRepository.save(user);
+
+        Room room = new Room("title", savedHost, RoomType.SINGLE);
+        Room savedRoom = roomRepository.save(room);
+
+        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
+        userRoomRepository.save(userRoom1);
+        userRoomRepository.save(userRoom2);
+
+        roomService.exitRoom(savedUser.getId(), savedRoom.getId());
+
+        List<UserRoom> allRoomUsers = userRoomRepository.findAllByRoomId(savedRoom.getId());
+        assertThat(allRoomUsers).hasSize(1);
+    }
+
+    @DisplayName("방이 이미 시작한 상태라면 나갈 수 없다")
+    @ParameterizedTest
+    @EnumSource(value = RoomStatus.class, mode = EnumSource.Mode.EXCLUDE, names = "WAIT")
+    void canNotExitWhenRoomAlreadyStart(RoomStatus alreadyStartStatus) {
+        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User savedUser1 = userRepository.save(user1);
+
+        Room room = new Room(null, "title", user1, RoomType.SINGLE, alreadyStartStatus);
+        Room savedRoom = roomRepository.save(room);
+
+        UserRoom userRoom1 = new UserRoom(savedUser1, room, Team.RED);
+        userRoomRepository.save(userRoom1);
+
+        assertThatThrownBy(() -> roomService.exitRoom(savedUser1.getId(), savedRoom.getId()))
+                .isInstanceOf(PingPongClientErrorException.class)
+                .hasMessage(ResponseMessage.CLIENT_ERROR.getValue());
+    }
+
+    @DisplayName("존재하지 않는 방에 대한 나가기 요청을 할 수 없다")
+    @Test
+    void canNotExitNotExistingRoom() {
+        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User savedUser1 = userRepository.save(user1);
+
+        assertThatThrownBy(() -> roomService.exitRoom(savedUser1.getId(), 1L))
+                .isInstanceOf(PingPongClientErrorException.class)
+                .hasMessage(ResponseMessage.CLIENT_ERROR.getValue());
+    }
+
+    @DisplayName("방 나가기 시나리오 테스트")
+    @TestFactory
+    Stream<DynamicTest> exitRoom() {
+        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User user2 = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
+        User user3 = new User(3L, "name3", "email3@email.com", UserStatus.ACTIVE);
+        User user4 = new User(4L, "name4", "email4@email.com", UserStatus.ACTIVE);
+        User savedUser1 = userRepository.save(user1);
+        User savedUser2 = userRepository.save(user2);
+        User savedUser3 = userRepository.save(user3);
+        User savedUser4 = userRepository.save(user4);
+
+        AtomicLong createdRoomId = new AtomicLong();
+
+        return Stream.of(
+                dynamicTest("유저1이 복식 방을 생성한다", () -> {
+                    RoomCreateRequest userOneRequest = new RoomCreateRequest(savedUser1.getId(), RoomType.DOUBLE,
+                            "title");
+                    assertThatCode(() -> {
+                        RoomCreateResponse createResponse = roomService.createRoom(userOneRequest);
+                        createdRoomId.set(createResponse.id());
+                    }).doesNotThrowAnyException();
+                }),
+                dynamicTest("유저2,3,4,가 방에 참여한다.", () -> {
+                    assertThatCode(() -> {
+                        roomService.attendRoom(savedUser2.getId(), createdRoomId.get());
+                        roomService.attendRoom(savedUser3.getId(), createdRoomId.get());
+                        roomService.attendRoom(savedUser4.getId(), createdRoomId.get());
+                    }).doesNotThrowAnyException();
+                }),
+                dynamicTest("방장이 아닌 유저 2가 방을 나간다", () -> {
+                    roomService.exitRoom(savedUser2.getId(), createdRoomId.get());
+
+                    List<UserRoom> allRoomUsers = userRoomRepository.findAllByRoomId(createdRoomId.get());
+                    assertThat(allRoomUsers.size()).isEqualTo(3);
+                }),
+                dynamicTest("방장인 유저 1이 방을 나가면 모든 유저를 퇴장시킨다", () -> {
+                    roomService.exitRoom(savedUser1.getId(), createdRoomId.get());
+
+                    List<UserRoom> allRoomUsers = userRoomRepository.findAllByRoomId(createdRoomId.get());
+                    assertThat(allRoomUsers.size()).isZero();
+                }),
+                dynamicTest("모든 유저가 나간 방은 FINISH 상태로 변경된다", () -> {
+                    Room room = roomRepository.findById(createdRoomId.get()).get();
+
+                    assertThat(room.getStatus()).isEqualTo(RoomStatus.FINISH);
                 })
         );
     }
