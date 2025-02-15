@@ -98,4 +98,28 @@ class RoomTest {
                 () -> assertThat(room.isHost(notHostId)).isFalse()
         );
     }
+
+    @DisplayName("방이 모두 찼는지 판별할 수 있다")
+    @ParameterizedTest
+    @EnumSource(RoomType.class)
+    void isFull(RoomType roomType) {
+        User host = new User(1L, 1L, "name", "email@email.com", UserStatus.ACTIVE);
+        Room room = new Room("title", host, roomType);
+        long firstTeamCount = roomType.getTeamCapacity();
+        long secondTeamCount = roomType.getTeamCapacity();
+
+        assertThat(room.isFull(firstTeamCount, secondTeamCount)).isTrue();
+    }
+
+    @DisplayName("방이 차지 않았는지 판별할 수 있다")
+    @ParameterizedTest
+    @EnumSource(RoomType.class)
+    void isNotFull(RoomType roomType) {
+        User host = new User(1L, 1L, "name", "email@email.com", UserStatus.ACTIVE);
+        Room room = new Room("title", host, roomType);
+        long firstTeamCount = roomType.getTeamCapacity();
+        long secondTeamCount = roomType.getTeamCapacity() - 1;
+
+        assertThat(room.isFull(firstTeamCount, secondTeamCount)).isFalse();
+    }
 }
