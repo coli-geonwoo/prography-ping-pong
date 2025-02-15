@@ -27,7 +27,7 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private long fakerId;
+    private long fakerId; //TODO unique 설정
 
     @NotBlank
     private String name;

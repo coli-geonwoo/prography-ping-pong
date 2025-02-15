@@ -10,6 +10,7 @@ import com.prography.ping_pong.domain.room.Room;
 import com.prography.ping_pong.domain.room.RoomType;
 import com.prography.ping_pong.domain.user.User;
 import com.prography.ping_pong.domain.user.UserStatus;
+import com.prography.ping_pong.dto.request.room.RoomAttendRequest;
 import com.prography.ping_pong.dto.request.room.RoomCreateRequest;
 import com.prography.ping_pong.dto.response.ApiResponse;
 import com.prography.ping_pong.view.ResponseMessage;
@@ -110,7 +111,7 @@ class RoomControllerTest extends BaseControllerTest {
     void canNotCreateRoomWithNonExistingUser() {
         RoomCreateRequest request = new RoomCreateRequest(1L, RoomType.SINGLE, "title");
 
-      RestAssured.given()
+        RestAssured.given()
                 .contentType(ContentType.JSON)
                 .body(request)
                 .when().post("/room")
@@ -150,6 +151,63 @@ class RoomControllerTest extends BaseControllerTest {
                 .contentType(ContentType.JSON)
                 .body(request)
                 .when().post("/room")
+                .then()
+                .statusCode(HttpStatus.CREATED.value());
+    }
+
+    @DisplayName("방에 참여할 수 있다")
+    @Test
+    void attendRoom() {
+        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User user2 = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
+        User savedUser1 = userRepository.save(user1);
+        User savedUser2 = userRepository.save(user2);
+        Room dummy = new Room("room1", savedUser1, RoomType.SINGLE);
+        Room savedRoom = roomRepository.save(dummy);
+        UserRoom userRoom = new UserRoom(savedUser1, dummy, Team.RED);
+        userRoomRepository.save(userRoom);
+
+        RoomAttendRequest request = new RoomAttendRequest(savedUser2.getId());
+
+        ApiResponse response = RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(request)
+                .pathParam("roomId", savedRoom.getId())
+                .when().post("/room/attention/{roomId}")
+                .then()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .as(ApiResponse.class);
+
+        boolean exists = userRoomRepository.existsByUserId(savedUser2.getId());
+
+        assertAll(
+                () -> assertThat(response.code()).isEqualTo(HttpStatus.OK.value()),
+                () -> assertThat(response.message()).isEqualTo(ResponseMessage.SUCCESS.getValue()),
+                () -> assertThat(exists).isTrue()
+        );
+    }
+
+    @DisplayName("유저가 ACTIVE 하지 않다면 방에 참여할 수 없다")
+    @ParameterizedTest
+    @EnumSource(value = UserStatus.class, mode = EnumSource.Mode.EXCLUDE, names = "ACTIVE")
+    void canNotAttendRoomWhenUserIsNotActive(UserStatus nonActiveStatus) {
+        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User nonActiveUser = new User(2L, "name2", "email2@email.com", nonActiveStatus);
+        User savedUser1 = userRepository.save(user1);
+        User savedNonActiveUser = userRepository.save(nonActiveUser);
+        Room dummy = new Room("room1", savedUser1, RoomType.SINGLE);
+        Room savedRoom = roomRepository.save(dummy);
+        UserRoom userRoom = new UserRoom(savedUser1, dummy, Team.RED);
+        userRoomRepository.save(userRoom);
+
+        RoomAttendRequest request = new RoomAttendRequest(savedNonActiveUser.getId());
+
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(request)
+                .pathParam("roomId", savedRoom.getId())
+                .when().post("/room/attention/{roomId}")
                 .then()
                 .statusCode(HttpStatus.CREATED.value());
     }
