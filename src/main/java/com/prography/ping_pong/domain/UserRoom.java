@@ -16,6 +16,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -23,6 +24,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Table(indexes = @Index(name = "user_room_idx_member_id", columnList = "member_id"))
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class UserRoom {
 
     @Id
@@ -41,4 +43,8 @@ public class UserRoom {
 
     @Enumerated(EnumType.STRING)
     private Team team;
+
+    public UserRoom(User user, Room room, Team team) {
+        this(null, user, room, team);
+    }
 }
