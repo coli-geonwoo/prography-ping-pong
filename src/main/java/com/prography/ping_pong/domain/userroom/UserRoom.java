@@ -1,6 +1,7 @@
 package com.prography.ping_pong.domain.userroom;
 
 import com.prography.ping_pong.domain.room.Room;
+import com.prography.ping_pong.domain.room.RoomType;
 import com.prography.ping_pong.domain.user.User;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -50,5 +51,19 @@ public class UserRoom {
 
     public UserRoom(User user, Room room, Team team) {
         this(null, user, room, team);
+    }
+
+    public boolean canChangeTeam(long oppositeTeamUserCount) {
+        RoomType roomType = room.getRoomType();
+        long teamCapacity = roomType.getTeamCapacity();
+        return room.isWait() && oppositeTeamUserCount < teamCapacity;
+    }
+
+    public void changeTeam() {
+        this.team = team.opposite();
+    }
+
+    public Team getOppositeTeam() {
+        return team.opposite();
     }
 }
