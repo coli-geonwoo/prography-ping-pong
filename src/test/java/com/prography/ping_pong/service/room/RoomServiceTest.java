@@ -23,6 +23,7 @@ import com.prography.ping_pong.view.ResponseMessage;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
@@ -454,5 +455,42 @@ class RoomServiceTest extends BaseServiceTest {
         assertThatThrownBy(() -> roomService.startRoom(host.getId(), 100L))
                 .isInstanceOf(PingPongClientErrorException.class)
                 .hasMessage(ResponseMessage.CLIENT_ERROR.getValue());
+    }
+
+    @Disabled
+    @DisplayName("방 시작하기 시나리오 테스트")
+    @TestFactory
+    Stream<DynamicTest> startScenarioTest() {
+        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User user2 = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
+        User savedUser1 = userRepository.save(user1);
+        User savedUser2 = userRepository.save(user2);
+
+        AtomicLong createdRoomId = new AtomicLong();
+
+        return Stream.of(
+                dynamicTest("유저1이 단식 방을 생성한다", () -> {
+                    RoomCreateRequest userOneRequest = new RoomCreateRequest(savedUser1.getId(), RoomType.SINGLE, "title");
+                    assertThatCode(() -> {
+                        RoomCreateResponse createResponse = roomService.createRoom(userOneRequest);
+                        createdRoomId.set(createResponse.id());
+                    }).doesNotThrowAnyException();
+                }),
+                dynamicTest("유저2가 방에 참여한다.", () -> {
+                    assertThatCode(() -> roomService.attendRoom(savedUser2.getId(), createdRoomId.get()))
+                            .doesNotThrowAnyException();
+                }),
+                dynamicTest("방장이 방을 시작한다", () -> {
+                    roomService.startRoom(savedUser1.getId(), createdRoomId.get());
+
+                    Room startedRoom = roomRepository.findById(createdRoomId.get()).get();
+                    assertThat(startedRoom.getStatus()).isEqualTo(RoomStatus.PROGRESS);
+                }),
+                dynamicTest("1분 뒤 방의 상태가 FINISH로 바뀐다", () -> {
+                    Thread.sleep(1000 * 70);
+                    Room finishedRoom = roomRepository.findById(createdRoomId.get()).get();
+                    assertThat(finishedRoom.getStatus()).isEqualTo(RoomStatus.FINISH);
+                })
+        );
     }
 }

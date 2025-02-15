@@ -22,7 +22,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +37,7 @@ public class RoomService {
     private final RoomRepository roomRepository;
     private final UserRoomService userRoomService;
     private final TaskScheduler taskScheduler;
+    private final PlatformTransactionManager transactionManager;
 
     @Transactional
     public RoomCreateResponse createRoom(RoomCreateRequest roomCreateRequest) {
@@ -100,7 +104,18 @@ public class RoomService {
 
     private void scheduleFinish(Room room) {
         Instant reserveTime = Instant.now().plus(PING_PONG_GAME_INTERVAL_MINUTES, ChronoUnit.MINUTES);
-        taskScheduler.schedule(() -> roomRepository.updateRoomStatusToFinish(room.getId()), reserveTime);
+        taskScheduler.schedule(() -> updateRoomToFinish(room.getId()), reserveTime);
+    }
+
+    private void updateRoomToFinish(long roomId) {
+        TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
+        try {
+            Room room = findRoomById(roomId);
+            room.finished();
+            transactionManager.commit(status);
+        } catch (Exception e) {
+            transactionManager.rollback(status);
+        }
     }
 
     private Room findRoomById(long roomId) {

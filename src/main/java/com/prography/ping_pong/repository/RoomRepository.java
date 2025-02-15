@@ -13,10 +13,6 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 
     Page<Room> findAllByOrderByIdAsc(Pageable pageable);
 
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("update Room r set r.status = 'FINISH' where r.id = :roomId")
-    void updateRoomStatusToFinish(long roomId);
-
     @Query("DELETE FROM Room room WHERE room IN :rooms")
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional

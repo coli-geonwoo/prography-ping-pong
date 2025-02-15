@@ -64,19 +64,4 @@ class RoomRepositoryTest extends BaseRepositoryTest {
         long count = roomRepository.count();
         assertThat(count).isZero();
     }
-
-    @DisplayName("방의 상태를 FINISH로 바꾼다")
-    @Test
-    void updateRoomStatusToFinish() {
-        User user = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User savedUser = userRepository.save(user);
-
-        Room dummy = new Room("room1", savedUser, RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
-
-        roomRepository.updateRoomStatusToFinish(savedRoom.getId());
-
-        Room foundRoom = roomRepository.findById(savedRoom.getId()).get();
-        assertThat(foundRoom.getStatus()).isEqualTo(RoomStatus.FINISH);
-    }
 }
