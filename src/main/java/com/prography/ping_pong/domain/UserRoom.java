@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(indexes = @Index(name = "userroom_idx_member_id", columnList = "member_id"))
+@Table(indexes = @Index(name = "user_room_idx_member_id", columnList = "member_id"))
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserRoom {
 
