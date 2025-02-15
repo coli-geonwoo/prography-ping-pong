@@ -2,6 +2,7 @@ package com.prography.ping_pong.controller;
 
 import com.prography.ping_pong.dto.request.room.RoomAttendRequest;
 import com.prography.ping_pong.dto.request.room.RoomCreateRequest;
+import com.prography.ping_pong.dto.request.room.RoomExitRequest;
 import com.prography.ping_pong.dto.response.ApiBodyResponse;
 import com.prography.ping_pong.dto.response.ApiResponse;
 import com.prography.ping_pong.dto.response.room.RoomDetailResponse;
@@ -56,6 +57,16 @@ public class RoomController {
         Pageable pageable = PageRequest.of(page, size);
         RoomPageResponse roomPageResponse = roomService.findAll(pageable);
         ApiBodyResponse<RoomPageResponse> response = ApiBodyResponse.ok(roomPageResponse);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/room/out/{roomId}")
+    public ResponseEntity<ApiResponse> exitRoom(
+            @RequestBody RoomExitRequest request,
+            @PathVariable(name = "roomId") long roomId
+    ) {
+        roomService.exitRoom(request.userId(), roomId);
+        ApiResponse response = ApiResponse.ok();
         return ResponseEntity.ok(response);
     }
 }
