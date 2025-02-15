@@ -1,6 +1,6 @@
 package com.prography.ping_pong.service.user;
 
-import com.prography.ping_pong.domain.UserRoom;
+import com.prography.ping_pong.domain.userroom.UserRoom;
 import com.prography.ping_pong.domain.room.Room;
 import com.prography.ping_pong.domain.user.User;
 import com.prography.ping_pong.dto.request.user.FakerRequest;

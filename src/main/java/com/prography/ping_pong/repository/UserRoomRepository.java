@@ -1,8 +1,7 @@
 package com.prography.ping_pong.repository;
 
-import com.prography.ping_pong.domain.UserRoom;
+import com.prography.ping_pong.domain.userroom.UserRoom;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

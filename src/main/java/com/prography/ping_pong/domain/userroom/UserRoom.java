@@ -1,4 +1,4 @@
-package com.prography.ping_pong.domain;
+package com.prography.ping_pong.domain.userroom;
 
 import com.prography.ping_pong.domain.room.Room;
 import com.prography.ping_pong.domain.user.User;
