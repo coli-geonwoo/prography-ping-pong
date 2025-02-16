@@ -35,7 +35,7 @@ public class RoomFacadeService {
         long hostId = roomCreateRequest.userId();
         User host = userService.findUser(hostId);
         Room room = roomCreateRequest.toRoom(host);
-        Room savedRoom = roomService.saveRoom(room);
+        Room savedRoom = roomService.createRoom(room);
         userRoomService.attend(host, room);
         return new RoomCreateResponse(savedRoom);
     }

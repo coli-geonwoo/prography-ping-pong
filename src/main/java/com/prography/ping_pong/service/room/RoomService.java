@@ -1,6 +1,7 @@
 package com.prography.ping_pong.service.room;
 
 import com.prography.ping_pong.domain.room.Room;
+import com.prography.ping_pong.domain.user.User;
 import com.prography.ping_pong.exception.custom.PingPongClientErrorException;
 import com.prography.ping_pong.exception.errorcode.ClientErrorCode;
 import com.prography.ping_pong.repository.RoomRepository;
@@ -23,8 +24,15 @@ public class RoomService {
     private final TransactionRunner transactionRunner;
 
     @Transactional
-    public Room saveRoom(Room room) {
+    public Room createRoom(Room room) {
+        if(isAlreadyCreated(room.getHost())){
+            throw new PingPongClientErrorException(ClientErrorCode.INVALID_REQUEST);
+        }
         return roomRepository.save(room);
+    }
+
+    private boolean isAlreadyCreated(User host){
+        return roomRepository.existsByHost(host);
     }
 
     @Transactional(readOnly = true)
