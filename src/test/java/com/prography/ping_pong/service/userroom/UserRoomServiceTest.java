@@ -34,7 +34,7 @@ class UserRoomServiceTest extends BaseServiceTest {
         User savedUser1 = userRepository.save(user1);
         User savedUser2 = userRepository.save(user2);
 
-        Room dummy = new Room("room1", savedUser1, RoomType.SINGLE);
+        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
         Room savedRoom = roomRepository.save(dummy);
 
         UserRoom userRoom1 = new UserRoom(savedUser1, dummy, Team.RED);
@@ -56,7 +56,7 @@ class UserRoomServiceTest extends BaseServiceTest {
         User savedUser1 = userRepository.save(user1);
         User savedUser2 = userRepository.save(user2);
 
-        Room dummy = new Room("room1", savedUser1, RoomType.SINGLE);
+        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
         Room savedRoom = roomRepository.save(dummy);
 
         UserRoom userRoom1 = new UserRoom(savedUser1, dummy, Team.RED);
@@ -76,7 +76,7 @@ class UserRoomServiceTest extends BaseServiceTest {
         User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
         User savedUser1 = userRepository.save(user1);
 
-        Room dummy = new Room("room1", savedUser1, RoomType.SINGLE);
+        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
         Room savedRoom = roomRepository.save(dummy);
 
         Team team = Team.RED;
@@ -96,7 +96,7 @@ class UserRoomServiceTest extends BaseServiceTest {
         User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
         User savedUser1 = userRepository.save(user1);
 
-        Room dummy = new Room(null, "room1", savedUser1, RoomType.SINGLE, notWaitStatus);
+        Room dummy = new Room(null, "room1", savedUser1.getId(), RoomType.SINGLE, notWaitStatus);
         Room savedRoom = roomRepository.save(dummy);
 
         UserRoom userRoom1 = new UserRoom(savedUser1, dummy, Team.RED);
@@ -115,7 +115,7 @@ class UserRoomServiceTest extends BaseServiceTest {
         User savedUser1 = userRepository.save(user1);
         User savedUser2 = userRepository.save(user2);
 
-        Room dummy = new Room("room1", savedUser1, RoomType.SINGLE);
+        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
         Room savedRoom = roomRepository.save(dummy);
 
         UserRoom userRoom1 = new UserRoom(savedUser1, dummy, Team.RED);
@@ -136,7 +136,7 @@ class UserRoomServiceTest extends BaseServiceTest {
         User savedUser1 = userRepository.save(user1);
         User savedUser2 = userRepository.save(user2);
 
-        Room dummy = new Room("room1", savedUser1, RoomType.SINGLE);
+        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
         Room savedRoom = roomRepository.save(dummy);
 
         UserRoom userRoom1 = new UserRoom(savedUser1, dummy, Team.RED);
@@ -153,7 +153,7 @@ class UserRoomServiceTest extends BaseServiceTest {
         User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
         User savedUser1 = userRepository.save(user1);
 
-        Room dummy = new Room("room1", savedUser1, RoomType.SINGLE);
+        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
         Room savedRoom = roomRepository.save(dummy);
 
         UserRoom userRoom1 = new UserRoom(savedUser1, dummy, Team.RED);

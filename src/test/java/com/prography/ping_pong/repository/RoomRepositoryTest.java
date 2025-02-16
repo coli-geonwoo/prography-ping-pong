@@ -33,8 +33,8 @@ class RoomRepositoryTest extends BaseRepositoryTest {
         User savedUser1 = userRepository.save(user1);
         User savedUser2 = userRepository.save(user2);
 
-        Room dummy1 = new Room("room1", savedUser1, RoomType.SINGLE);
-        Room dummy2 = new Room("room2", savedUser2, RoomType.SINGLE);
+        Room dummy1 = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
+        Room dummy2 = new Room("room2", savedUser2.getId(), RoomType.SINGLE);
         Room savedRoom1 = roomRepository.save(dummy1);
         Room savedRoom2 = roomRepository.save(dummy2);
 
@@ -56,7 +56,7 @@ class RoomRepositoryTest extends BaseRepositoryTest {
         User user = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
         User savedUser = userRepository.save(user);
 
-        Room dummy = new Room("room1", savedUser, RoomType.SINGLE);
+        Room dummy = new Room("room1", savedUser.getId(), RoomType.SINGLE);
         Room savedRoom = roomRepository.save(dummy);
 
         roomRepository.deleteAllWithFlush(List.of(savedRoom));

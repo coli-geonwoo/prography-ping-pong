@@ -37,7 +37,7 @@ class RoomControllerTest extends BaseControllerTest {
         User user = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
         User savedUser = userRepository.save(user);
 
-        Room dummy = new Room("room1", savedUser, RoomType.SINGLE);
+        Room dummy = new Room("room1", savedUser.getId(), RoomType.SINGLE);
         Room savedRoom = roomRepository.save(dummy);
 
         RestAssured.given()
@@ -74,8 +74,8 @@ class RoomControllerTest extends BaseControllerTest {
         User savedUser1 = userRepository.save(user1);
         User savedUser2 = userRepository.save(user2);
 
-        Room dummy1 = new Room("room1", savedUser1, RoomType.SINGLE);
-        Room dummy2 = new Room("room2", savedUser2, RoomType.SINGLE);
+        Room dummy1 = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
+        Room dummy2 = new Room("room2", savedUser2.getId(), RoomType.SINGLE);
         Room savedRoom1 = roomRepository.save(dummy1);
         Room savedRoom2 = roomRepository.save(dummy2);
 
@@ -147,7 +147,7 @@ class RoomControllerTest extends BaseControllerTest {
     void canNotCreateRoomWithAlreadyParticipatedUser() {
         User user = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
         User savedUser = userRepository.save(user);
-        Room dummy = new Room("room1", savedUser, RoomType.SINGLE);
+        Room dummy = new Room("room1", savedUser.getId(), RoomType.SINGLE);
         Room savedRoom = roomRepository.save(dummy);
         UserRoom userRoom = new UserRoom(user, dummy, Team.RED);
         userRoomRepository.save(userRoom);
@@ -169,7 +169,7 @@ class RoomControllerTest extends BaseControllerTest {
         User user2 = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
         User savedUser1 = userRepository.save(user1);
         User savedUser2 = userRepository.save(user2);
-        Room dummy = new Room("room1", savedUser1, RoomType.SINGLE);
+        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
         Room savedRoom = roomRepository.save(dummy);
         UserRoom userRoom = new UserRoom(savedUser1, dummy, Team.RED);
         userRoomRepository.save(userRoom);
@@ -203,7 +203,7 @@ class RoomControllerTest extends BaseControllerTest {
         User nonActiveUser = new User(2L, "name2", "email2@email.com", nonActiveStatus);
         User savedUser1 = userRepository.save(user1);
         User savedNonActiveUser = userRepository.save(nonActiveUser);
-        Room dummy = new Room("room1", savedUser1, RoomType.SINGLE);
+        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
         Room savedRoom = roomRepository.save(dummy);
         UserRoom userRoom = new UserRoom(savedUser1, dummy, Team.RED);
         userRoomRepository.save(userRoom);
@@ -228,7 +228,7 @@ class RoomControllerTest extends BaseControllerTest {
         User savedHost = userRepository.save(host);
         User savedUser = userRepository.save(user);
 
-        Room room = new Room("title", savedHost, RoomType.SINGLE);
+        Room room = new Room("title", savedHost.getId(), RoomType.SINGLE);
         Room savedRoom = roomRepository.save(room);
 
         UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
@@ -265,7 +265,7 @@ class RoomControllerTest extends BaseControllerTest {
         User savedHost = userRepository.save(host);
         User savedUser = userRepository.save(user);
 
-        Room room = new Room("title", savedHost, RoomType.SINGLE);
+        Room room = new Room("title", savedHost.getId(), RoomType.SINGLE);
         Room savedRoom = roomRepository.save(room);
 
         UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
@@ -301,7 +301,7 @@ class RoomControllerTest extends BaseControllerTest {
         User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
         User savedUser1 = userRepository.save(user1);
 
-        Room room = new Room(null, "title", user1, RoomType.SINGLE, alreadyStartStatus);
+        Room room = new Room(null, "title", user1.getId(), RoomType.SINGLE, alreadyStartStatus);
         Room savedRoom = roomRepository.save(room);
 
         UserRoom userRoom1 = new UserRoom(savedUser1, room, Team.RED);
@@ -343,7 +343,7 @@ class RoomControllerTest extends BaseControllerTest {
         User savedHost = userRepository.save(host);
         User savedUser = userRepository.save(user);
 
-        Room room = new Room("title", savedHost, RoomType.SINGLE);
+        Room room = new Room("title", savedHost.getId(), RoomType.SINGLE);
         Room savedRoom = roomRepository.save(room);
 
         UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
@@ -381,7 +381,7 @@ class RoomControllerTest extends BaseControllerTest {
         User savedHost = userRepository.save(host);
         User savedUser = userRepository.save(user);
 
-        Room room = new Room("title", savedHost, RoomType.SINGLE);
+        Room room = new Room("title", savedHost.getId(), RoomType.SINGLE);
         Room savedRoom = roomRepository.save(room);
 
         UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
@@ -407,7 +407,7 @@ class RoomControllerTest extends BaseControllerTest {
         User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
         User savedHost = userRepository.save(host);
 
-        Room room = new Room("title", savedHost, RoomType.SINGLE);
+        Room room = new Room("title", savedHost.getId(), RoomType.SINGLE);
         Room savedRoom = roomRepository.save(room);
 
         UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
@@ -433,7 +433,7 @@ class RoomControllerTest extends BaseControllerTest {
         User savedHost = userRepository.save(host);
         User savedUser = userRepository.save(user);
 
-        Room room = new Room(null, "title", savedHost, RoomType.SINGLE, notWaitStatus);
+        Room room = new Room(null, "title", savedHost.getId(), RoomType.SINGLE, notWaitStatus);
         Room savedRoom = roomRepository.save(room);
 
         UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
