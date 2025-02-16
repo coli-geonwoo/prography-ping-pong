@@ -1,4 +1,4 @@
-package com.prography.ping_pong.service.user.client;
+package com.prography.ping_pong.client;
 
 import com.prography.ping_pong.dto.request.user.FakerRequest;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

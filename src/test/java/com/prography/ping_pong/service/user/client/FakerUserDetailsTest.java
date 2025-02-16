@@ -2,6 +2,8 @@ package com.prography.ping_pong.service.user.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.prography.ping_pong.client.FakerUserDetail;
+import com.prography.ping_pong.client.FakerUserDetails;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
