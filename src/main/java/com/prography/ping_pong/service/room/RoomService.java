@@ -22,7 +22,6 @@ public class RoomService {
     private final TaskScheduler taskScheduler;
     private final TransactionRunner transactionRunner;
 
-
     @Transactional
     public Room saveRoom(Room room) {
         return roomRepository.save(room);
