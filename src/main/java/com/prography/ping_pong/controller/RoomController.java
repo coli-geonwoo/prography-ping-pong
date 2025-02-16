@@ -8,6 +8,7 @@ import com.prography.ping_pong.dto.response.ApiBodyResponse;
 import com.prography.ping_pong.dto.response.ApiResponse;
 import com.prography.ping_pong.dto.response.room.RoomDetailResponse;
 import com.prography.ping_pong.dto.response.room.RoomPageResponse;
+import com.prography.ping_pong.service.RoomFacadeService;
 import com.prography.ping_pong.service.room.RoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -26,10 +27,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class RoomController {
 
     private final RoomService roomService;
+    private final RoomFacadeService roomFacadeService;
 
     @PostMapping("/room")
     public ResponseEntity<ApiResponse> createRoom(@RequestBody RoomCreateRequest request) {
-        roomService.createRoom(request);
+        roomFacadeService.createRoom(request);
         ApiResponse response = ApiResponse.ok();
         return ResponseEntity.ok(response);
     }
@@ -39,14 +41,14 @@ public class RoomController {
             @PathVariable(name = "roomId") long roomId,
             @RequestBody RoomAttendRequest request
     ) {
-        roomService.attendRoom(request.userId(), roomId);
+        roomFacadeService.attendRoom(request.userId(), roomId);
         ApiResponse response = ApiResponse.ok();
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/room/{roomId}")
     public ResponseEntity<ApiBodyResponse<RoomDetailResponse>> findRoom(@PathVariable(name = "roomId") long roomId) {
-        RoomDetailResponse room = roomService.findRoom(roomId);
+        RoomDetailResponse room = roomFacadeService.findRoom(roomId);
         ApiBodyResponse<RoomDetailResponse> response = ApiBodyResponse.ok(room);
         return ResponseEntity.ok(response);
     }
@@ -57,7 +59,7 @@ public class RoomController {
             @RequestParam(name = "page") int page
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        RoomPageResponse roomPageResponse = roomService.findAll(pageable);
+        RoomPageResponse roomPageResponse = roomFacadeService.findAllRoom(pageable);
         ApiBodyResponse<RoomPageResponse> response = ApiBodyResponse.ok(roomPageResponse);
         return ResponseEntity.ok(response);
     }
@@ -67,7 +69,7 @@ public class RoomController {
             @RequestBody RoomStartRequest request,
             @PathVariable(name = "roomId") long roomId
     ) {
-        roomService.startRoom(request.userId(), roomId);
+        roomFacadeService.startRoom(request.userId(), roomId);
         ApiResponse response = ApiResponse.ok();
         return ResponseEntity.ok(response);
     }
@@ -77,7 +79,7 @@ public class RoomController {
             @RequestBody RoomExitRequest request,
             @PathVariable(name = "roomId") long roomId
     ) {
-        roomService.exitRoom(request.userId(), roomId);
+        roomFacadeService.exitRoom(request.userId(), roomId);
         ApiResponse response = ApiResponse.ok();
         return ResponseEntity.ok(response);
     }

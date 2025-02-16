@@ -7,6 +7,8 @@ import com.prography.ping_pong.dto.request.user.FakerRequest;
 import com.prography.ping_pong.dto.request.user.UserInitializeRequest;
 import com.prography.ping_pong.dto.response.ApiResponse;
 import com.prography.ping_pong.dto.response.user.UserPageResponse;
+import com.prography.ping_pong.exception.custom.PingPongClientErrorException;
+import com.prography.ping_pong.exception.errorcode.ClientErrorCode;
 import com.prography.ping_pong.repository.RoomRepository;
 import com.prography.ping_pong.repository.UserRepository;
 import com.prography.ping_pong.repository.UserRoomRepository;
@@ -64,5 +66,11 @@ public class UserService {
     public UserPageResponse findAll(Pageable pageable) {
         Page<User> foundUsers = userRepository.findAllByOrderByIdAsc(pageable);
         return new UserPageResponse(foundUsers);
+    }
+
+    @Transactional(readOnly = true)
+    public User findUser(long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new PingPongClientErrorException(ClientErrorCode.INVALID_REQUEST));
     }
 }

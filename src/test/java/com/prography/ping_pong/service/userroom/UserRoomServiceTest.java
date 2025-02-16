@@ -42,7 +42,7 @@ class UserRoomServiceTest extends BaseServiceTest {
         UserRoom savedUserRoom1 = userRoomRepository.save(userRoom1);
         UserRoom savedUserRoom2 = userRoomRepository.save(userRoom2);
 
-        userRoomService.exitAllRoomUsers(savedRoom.getId());
+        userRoomService.exitAllRoomUsers(savedRoom);
 
         List<UserRoom> allRoomUsers = userRoomRepository.findAllByRoomId(savedRoom.getId());
         assertThat(allRoomUsers).isEmpty();
