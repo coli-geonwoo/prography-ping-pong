@@ -127,4 +127,38 @@ class UserRoomServiceTest extends BaseServiceTest {
                 .isInstanceOf(PingPongClientErrorException.class)
                 .hasMessage(ResponseMessage.CLIENT_ERROR.getValue());
     }
+
+    @DisplayName("방의 인원이 모두 찼는지 확인할 수 있다")
+    @Test
+    void isFull() {
+        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User user2 = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
+        User savedUser1 = userRepository.save(user1);
+        User savedUser2 = userRepository.save(user2);
+
+        Room dummy = new Room("room1", savedUser1, RoomType.SINGLE);
+        Room savedRoom = roomRepository.save(dummy);
+
+        UserRoom userRoom1 = new UserRoom(savedUser1, dummy, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser2, dummy, Team.BLUE);
+        UserRoom savedUserRoom1 = userRoomRepository.save(userRoom1);
+        UserRoom savedUserRoom2 = userRoomRepository.save(userRoom2);
+
+        assertThat(userRoomService.isFull(savedRoom)).isTrue();
+    }
+
+    @DisplayName("방의 인원이 모두 차지 않았는지 확인할 수 있다")
+    @Test
+    void isNotFull() {
+        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
+        User savedUser1 = userRepository.save(user1);
+
+        Room dummy = new Room("room1", savedUser1, RoomType.SINGLE);
+        Room savedRoom = roomRepository.save(dummy);
+
+        UserRoom userRoom1 = new UserRoom(savedUser1, dummy, Team.RED);
+        UserRoom savedUserRoom1 = userRoomRepository.save(userRoom1);
+
+        assertThat(userRoomService.isFull(savedRoom)).isFalse();
+    }
 }
