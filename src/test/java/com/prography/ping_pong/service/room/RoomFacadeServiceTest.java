@@ -1,4 +1,4 @@
-package com.prography.ping_pong.service;
+package com.prography.ping_pong.service.room;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;

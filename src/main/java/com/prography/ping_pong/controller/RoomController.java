@@ -8,7 +8,7 @@ import com.prography.ping_pong.dto.response.ApiBodyResponse;
 import com.prography.ping_pong.dto.response.ApiResponse;
 import com.prography.ping_pong.dto.response.room.RoomDetailResponse;
 import com.prography.ping_pong.dto.response.room.RoomPageResponse;
-import com.prography.ping_pong.service.RoomFacadeService;
+import com.prography.ping_pong.service.room.RoomFacadeService;
 import com.prography.ping_pong.service.room.RoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;

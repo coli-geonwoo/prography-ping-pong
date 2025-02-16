@@ -1,4 +1,4 @@
-package com.prography.ping_pong.service;
+package com.prography.ping_pong.service.room;
 
 import com.prography.ping_pong.domain.room.Room;
 import com.prography.ping_pong.domain.user.User;
@@ -11,7 +11,6 @@ import com.prography.ping_pong.dto.response.room.RoomPageResponse;
 import com.prography.ping_pong.dto.response.room.RoomStartResponse;
 import com.prography.ping_pong.exception.custom.PingPongClientErrorException;
 import com.prography.ping_pong.exception.errorcode.ClientErrorCode;
-import com.prography.ping_pong.service.room.RoomService;
 import com.prography.ping_pong.service.user.UserService;
 import com.prography.ping_pong.service.userroom.UserRoomService;
 import lombok.RequiredArgsConstructor;

@@ -1,6 +1,5 @@
-package com.prography.ping_pong.service;
+package com.prography.ping_pong.service.userroom;
 
-import com.prography.ping_pong.service.userroom.UserRoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
