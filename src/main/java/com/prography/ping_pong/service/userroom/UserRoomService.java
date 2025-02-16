@@ -103,4 +103,10 @@ public class UserRoomService {
             throw new PingPongClientErrorException(ClientErrorCode.INVALID_REQUEST);
         }
     }
+
+    @Transactional
+    public void deleteAllUserRooms() {
+        List<UserRoom> allUserRooms = userRoomRepository.findAll();
+        userRoomRepository.deleteAllWithFlush(allUserRooms);
+    }
 }

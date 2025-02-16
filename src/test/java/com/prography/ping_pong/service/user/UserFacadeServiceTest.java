@@ -7,16 +7,15 @@ import com.prography.ping_pong.common.BaseServiceTest;
 import com.prography.ping_pong.domain.user.User;
 import com.prography.ping_pong.domain.user.UserStatus;
 import com.prography.ping_pong.dto.response.user.UserPageResponse;
-import com.prography.ping_pong.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 
-class UserServiceTest extends BaseServiceTest {
+class UserFacadeServiceTest extends BaseServiceTest {
 
     @Autowired
-    private UserService userService;
+    private UserFacadeService userFacadeService;
 
     @DisplayName("페이징된 유저 목록을 조회한다")
     @Test
@@ -26,7 +25,7 @@ class UserServiceTest extends BaseServiceTest {
         userRepository.save(user1);
         userRepository.save(user2);
 
-        UserPageResponse response = userService.findAll(Pageable.ofSize(1).withPage(1));
+        UserPageResponse response = userFacadeService.findAll(Pageable.ofSize(1).withPage(1));
 
         assertAll(
                 () -> assertThat(response.totalPages()).isEqualTo(2L),

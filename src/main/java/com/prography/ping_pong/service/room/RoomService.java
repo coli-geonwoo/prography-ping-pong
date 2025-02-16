@@ -8,6 +8,7 @@ import com.prography.ping_pong.repository.RoomRepository;
 import com.prography.ping_pong.util.TransactionRunner;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -61,5 +62,11 @@ public class RoomService {
     private void updateRoomToFinish(long roomId) {
         Room room = findRoom(roomId);
         room.finished();
+    }
+
+    @Transactional
+    public void deleteAllRooms() {
+        List<Room> allRooms = roomRepository.findAll();
+        roomRepository.deleteAllWithFlush(allRooms);
     }
 }
