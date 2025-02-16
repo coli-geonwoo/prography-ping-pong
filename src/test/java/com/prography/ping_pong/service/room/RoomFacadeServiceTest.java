@@ -34,10 +34,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-class RoomServiceTest extends BaseServiceTest {
+class RoomFacadeServiceTest extends BaseServiceTest {
 
     @Autowired
-    private RoomService roomService;
+    private RoomFacadeService roomFacadeService;
 
     @DisplayName("아이디로 방을 찾는다")
     @Test
@@ -48,7 +48,7 @@ class RoomServiceTest extends BaseServiceTest {
         Room dummy = new Room("room1", savedUser, RoomType.SINGLE);
         Room savedRoom = roomRepository.save(dummy);
 
-        RoomDetailResponse roomDetailResponse = roomService.findRoom(savedRoom.getId());
+        RoomDetailResponse roomDetailResponse = roomFacadeService.findRoom(savedRoom.getId());
 
         assertAll(
                 () -> assertThat(roomDetailResponse.id()).isEqualTo(savedRoom.getId()),
@@ -74,7 +74,7 @@ class RoomServiceTest extends BaseServiceTest {
 
         Pageable pageable = PageRequest.of(1, 1);
 
-        RoomPageResponse roomPageResponse = roomService.findAll(pageable);
+        RoomPageResponse roomPageResponse = roomFacadeService.findAllRoom(pageable);
 
         assertAll(
                 () -> assertThat(roomPageResponse.totalPages()).isEqualTo(2L),
@@ -91,7 +91,7 @@ class RoomServiceTest extends BaseServiceTest {
         User savedUser = userRepository.save(user);
         RoomCreateRequest request = new RoomCreateRequest(savedUser.getId(), RoomType.SINGLE, "title");
 
-        roomService.createRoom(request);
+        roomFacadeService.createRoom(request);
 
         long roomCount = roomRepository.count();
         boolean exists = userRoomRepository.findByUserId(user.getId()).isPresent();
@@ -106,7 +106,7 @@ class RoomServiceTest extends BaseServiceTest {
     void canNotCreateRoomWithNonExistingUser() {
         RoomCreateRequest request = new RoomCreateRequest(1L, RoomType.SINGLE, "title");
 
-        assertThatThrownBy(() -> roomService.createRoom(request))
+        assertThatThrownBy(() -> roomFacadeService.createRoom(request))
                 .isInstanceOf(PingPongClientErrorException.class)
                 .hasMessage(ResponseMessage.CLIENT_ERROR.getValue());
     }
@@ -119,7 +119,7 @@ class RoomServiceTest extends BaseServiceTest {
         User savedUser = userRepository.save(user);
         RoomCreateRequest request = new RoomCreateRequest(savedUser.getId(), RoomType.SINGLE, "title");
 
-        assertThatThrownBy(() -> roomService.createRoom(request))
+        assertThatThrownBy(() -> roomFacadeService.createRoom(request))
                 .isInstanceOf(PingPongClientErrorException.class)
                 .hasMessage(ResponseMessage.CLIENT_ERROR.getValue());
     }
@@ -136,7 +136,7 @@ class RoomServiceTest extends BaseServiceTest {
 
         RoomCreateRequest request = new RoomCreateRequest(savedUser.getId(), RoomType.SINGLE, "title");
 
-        assertThatThrownBy(() -> roomService.createRoom(request))
+        assertThatThrownBy(() -> roomFacadeService.createRoom(request))
                 .isInstanceOf(PingPongClientErrorException.class)
                 .hasMessage(ResponseMessage.CLIENT_ERROR.getValue());
     }
@@ -153,7 +153,7 @@ class RoomServiceTest extends BaseServiceTest {
         UserRoom userRoom = new UserRoom(user1, dummy, Team.RED);
         userRoomRepository.save(userRoom);
 
-        assertThatCode(() -> roomService.attendRoom(savedUser2.getId(), savedRoom.getId()))
+        assertThatCode(() -> roomFacadeService.attendRoom(savedUser2.getId(), savedRoom.getId()))
                 .doesNotThrowAnyException();
     }
 
@@ -170,7 +170,7 @@ class RoomServiceTest extends BaseServiceTest {
         UserRoom userRoom = new UserRoom(user1, dummy, Team.RED);
         userRoomRepository.save(userRoom);
 
-        assertThatThrownBy(() -> roomService.attendRoom(savedUser2.getId(), savedRoom.getId()))
+        assertThatThrownBy(() -> roomFacadeService.attendRoom(savedUser2.getId(), savedRoom.getId()))
                 .isInstanceOf(PingPongClientErrorException.class)
                 .hasMessage(ResponseMessage.CLIENT_ERROR.getValue());
     }
@@ -190,18 +190,18 @@ class RoomServiceTest extends BaseServiceTest {
                     RoomCreateRequest userOneRequest = new RoomCreateRequest(savedUser1.getId(), RoomType.SINGLE,
                             "title");
                     assertThatCode(() -> {
-                        RoomCreateResponse createResponse = roomService.createRoom(userOneRequest);
+                        RoomCreateResponse createResponse = roomFacadeService.createRoom(userOneRequest);
                         createdRoomId.set(createResponse.id());
                     }).doesNotThrowAnyException();
                 }),
                 dynamicTest("유저2가 단식 방을 생성한다.", () -> {
                     RoomCreateRequest userTwoRequest = new RoomCreateRequest(savedUser2.getId(), RoomType.SINGLE,
                             "title");
-                    assertThatCode(() -> roomService.createRoom(userTwoRequest))
+                    assertThatCode(() -> roomFacadeService.createRoom(userTwoRequest))
                             .doesNotThrowAnyException();
                 }),
                 dynamicTest("다른 방에 참여중인 유저2가 유저1이 만든 방에 참여할 수 없다", () -> {
-                    assertThatThrownBy(() -> roomService.attendRoom(savedUser2.getId(), createdRoomId.get()))
+                    assertThatThrownBy(() -> roomFacadeService.attendRoom(savedUser2.getId(), createdRoomId.get()))
                             .isInstanceOf(PingPongClientErrorException.class)
                             .hasMessage(ResponseMessage.CLIENT_ERROR.getValue());
                 })
@@ -225,16 +225,16 @@ class RoomServiceTest extends BaseServiceTest {
                     RoomCreateRequest userOneRequest = new RoomCreateRequest(savedUser1.getId(), RoomType.SINGLE,
                             "title");
                     assertThatCode(() -> {
-                        RoomCreateResponse createResponse = roomService.createRoom(userOneRequest);
+                        RoomCreateResponse createResponse = roomFacadeService.createRoom(userOneRequest);
                         createdRoomId.set(createResponse.id());
                     }).doesNotThrowAnyException();
                 }),
                 dynamicTest("유저2가 방에 참여한다.", () -> {
-                    assertThatCode(() -> roomService.attendRoom(savedUser2.getId(), createdRoomId.get()))
+                    assertThatCode(() -> roomFacadeService.attendRoom(savedUser2.getId(), createdRoomId.get()))
                             .doesNotThrowAnyException();
                 }),
                 dynamicTest("인원이 찬 단식 방에 유저3가 참여할 수 없다", () -> {
-                    assertThatThrownBy(() -> roomService.attendRoom(savedUser3.getId(), createdRoomId.get()))
+                    assertThatThrownBy(() -> roomFacadeService.attendRoom(savedUser3.getId(), createdRoomId.get()))
                             .isInstanceOf(PingPongClientErrorException.class)
                             .hasMessage(ResponseMessage.CLIENT_ERROR.getValue());
                 })
@@ -257,7 +257,7 @@ class RoomServiceTest extends BaseServiceTest {
         userRoomRepository.save(userRoom1);
         userRoomRepository.save(userRoom2);
 
-        roomService.exitRoom(savedHost.getId(), savedRoom.getId());
+        roomFacadeService.exitRoom(savedHost.getId(), savedRoom.getId());
 
         List<UserRoom> allRoomUsers = userRoomRepository.findAllByRoomId(savedRoom.getId());
         assertThat(allRoomUsers).isEmpty();
@@ -279,7 +279,7 @@ class RoomServiceTest extends BaseServiceTest {
         userRoomRepository.save(userRoom1);
         userRoomRepository.save(userRoom2);
 
-        roomService.exitRoom(savedUser.getId(), savedRoom.getId());
+        roomFacadeService.exitRoom(savedUser.getId(), savedRoom.getId());
 
         List<UserRoom> allRoomUsers = userRoomRepository.findAllByRoomId(savedRoom.getId());
         assertThat(allRoomUsers).hasSize(1);
@@ -298,7 +298,7 @@ class RoomServiceTest extends BaseServiceTest {
         UserRoom userRoom1 = new UserRoom(savedUser1, room, Team.RED);
         userRoomRepository.save(userRoom1);
 
-        assertThatThrownBy(() -> roomService.exitRoom(savedUser1.getId(), savedRoom.getId()))
+        assertThatThrownBy(() -> roomFacadeService.exitRoom(savedUser1.getId(), savedRoom.getId()))
                 .isInstanceOf(PingPongClientErrorException.class)
                 .hasMessage(ResponseMessage.CLIENT_ERROR.getValue());
     }
@@ -309,7 +309,7 @@ class RoomServiceTest extends BaseServiceTest {
         User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
         User savedUser1 = userRepository.save(user1);
 
-        assertThatThrownBy(() -> roomService.exitRoom(savedUser1.getId(), 1L))
+        assertThatThrownBy(() -> roomFacadeService.exitRoom(savedUser1.getId(), 1L))
                 .isInstanceOf(PingPongClientErrorException.class)
                 .hasMessage(ResponseMessage.CLIENT_ERROR.getValue());
     }
@@ -333,25 +333,25 @@ class RoomServiceTest extends BaseServiceTest {
                     RoomCreateRequest userOneRequest = new RoomCreateRequest(savedUser1.getId(), RoomType.DOUBLE,
                             "title");
                     assertThatCode(() -> {
-                        RoomCreateResponse createResponse = roomService.createRoom(userOneRequest);
+                        RoomCreateResponse createResponse = roomFacadeService.createRoom(userOneRequest);
                         createdRoomId.set(createResponse.id());
                     }).doesNotThrowAnyException();
                 }),
                 dynamicTest("유저2,3,4,가 방에 참여한다.", () -> {
                     assertThatCode(() -> {
-                        roomService.attendRoom(savedUser2.getId(), createdRoomId.get());
-                        roomService.attendRoom(savedUser3.getId(), createdRoomId.get());
-                        roomService.attendRoom(savedUser4.getId(), createdRoomId.get());
+                        roomFacadeService.attendRoom(savedUser2.getId(), createdRoomId.get());
+                        roomFacadeService.attendRoom(savedUser3.getId(), createdRoomId.get());
+                        roomFacadeService.attendRoom(savedUser4.getId(), createdRoomId.get());
                     }).doesNotThrowAnyException();
                 }),
                 dynamicTest("방장이 아닌 유저 2가 방을 나간다", () -> {
-                    roomService.exitRoom(savedUser2.getId(), createdRoomId.get());
+                    roomFacadeService.exitRoom(savedUser2.getId(), createdRoomId.get());
 
                     List<UserRoom> allRoomUsers = userRoomRepository.findAllByRoomId(createdRoomId.get());
                     assertThat(allRoomUsers.size()).isEqualTo(3);
                 }),
                 dynamicTest("방장인 유저 1이 방을 나가면 모든 유저를 퇴장시킨다", () -> {
-                    roomService.exitRoom(savedUser1.getId(), createdRoomId.get());
+                    roomFacadeService.exitRoom(savedUser1.getId(), createdRoomId.get());
 
                     List<UserRoom> allRoomUsers = userRoomRepository.findAllByRoomId(createdRoomId.get());
                     assertThat(allRoomUsers.size()).isZero();
@@ -380,7 +380,7 @@ class RoomServiceTest extends BaseServiceTest {
         userRoomRepository.save(userRoom1);
         userRoomRepository.save(userRoom2);
 
-        roomService.startRoom(host.getId(), savedRoom.getId());
+        roomFacadeService.startRoom(host.getId(), savedRoom.getId());
 
         Room startedRoom = roomRepository.findById(savedRoom.getId()).get();
         assertThat(startedRoom.getStatus()).isEqualTo(RoomStatus.PROGRESS);
@@ -402,7 +402,7 @@ class RoomServiceTest extends BaseServiceTest {
         userRoomRepository.save(userRoom1);
         userRoomRepository.save(userRoom2);
 
-        assertThatThrownBy(() -> roomService.startRoom(savedUser.getId(), savedRoom.getId()))
+        assertThatThrownBy(() -> roomFacadeService.startRoom(savedUser.getId(), savedRoom.getId()))
                 .isInstanceOf(PingPongClientErrorException.class)
                 .hasMessage(ResponseMessage.CLIENT_ERROR.getValue());
     }
@@ -419,7 +419,7 @@ class RoomServiceTest extends BaseServiceTest {
         UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
         userRoomRepository.save(userRoom1);
 
-        assertThatThrownBy(() -> roomService.startRoom(savedHost.getId(), savedRoom.getId()))
+        assertThatThrownBy(() -> roomFacadeService.startRoom(savedHost.getId(), savedRoom.getId()))
                 .isInstanceOf(PingPongClientErrorException.class)
                 .hasMessage(ResponseMessage.CLIENT_ERROR.getValue());
     }
@@ -441,7 +441,7 @@ class RoomServiceTest extends BaseServiceTest {
         userRoomRepository.save(userRoom1);
         userRoomRepository.save(userRoom2);
 
-        assertThatThrownBy(() -> roomService.startRoom(savedHost.getId(), savedRoom.getId()))
+        assertThatThrownBy(() -> roomFacadeService.startRoom(savedHost.getId(), savedRoom.getId()))
                 .isInstanceOf(PingPongClientErrorException.class)
                 .hasMessage(ResponseMessage.CLIENT_ERROR.getValue());
     }
@@ -452,7 +452,7 @@ class RoomServiceTest extends BaseServiceTest {
         User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
         User savedHost = userRepository.save(host);
 
-        assertThatThrownBy(() -> roomService.startRoom(host.getId(), 100L))
+        assertThatThrownBy(() -> roomFacadeService.startRoom(host.getId(), 100L))
                 .isInstanceOf(PingPongClientErrorException.class)
                 .hasMessage(ResponseMessage.CLIENT_ERROR.getValue());
     }
@@ -472,16 +472,16 @@ class RoomServiceTest extends BaseServiceTest {
                 dynamicTest("유저1이 단식 방을 생성한다", () -> {
                     RoomCreateRequest userOneRequest = new RoomCreateRequest(savedUser1.getId(), RoomType.SINGLE, "title");
                     assertThatCode(() -> {
-                        RoomCreateResponse createResponse = roomService.createRoom(userOneRequest);
+                        RoomCreateResponse createResponse = roomFacadeService.createRoom(userOneRequest);
                         createdRoomId.set(createResponse.id());
                     }).doesNotThrowAnyException();
                 }),
                 dynamicTest("유저2가 방에 참여한다.", () -> {
-                    assertThatCode(() -> roomService.attendRoom(savedUser2.getId(), createdRoomId.get()))
+                    assertThatCode(() -> roomFacadeService.attendRoom(savedUser2.getId(), createdRoomId.get()))
                             .doesNotThrowAnyException();
                 }),
                 dynamicTest("방장이 방을 시작한다", () -> {
-                    roomService.startRoom(savedUser1.getId(), createdRoomId.get());
+                    roomFacadeService.startRoom(savedUser1.getId(), createdRoomId.get());
 
                     Room startedRoom = roomRepository.findById(createdRoomId.get()).get();
                     assertThat(startedRoom.getStatus()).isEqualTo(RoomStatus.PROGRESS);

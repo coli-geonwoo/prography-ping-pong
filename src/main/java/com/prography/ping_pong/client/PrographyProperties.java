@@ -1,4 +1,4 @@
-package com.prography.ping_pong.service.user.client;
+package com.prography.ping_pong.client;
 
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.boot.context.properties.ConfigurationProperties;

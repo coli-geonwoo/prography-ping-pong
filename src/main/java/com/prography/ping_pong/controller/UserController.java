@@ -4,7 +4,7 @@ import com.prography.ping_pong.dto.request.user.UserInitializeRequest;
 import com.prography.ping_pong.dto.response.ApiBodyResponse;
 import com.prography.ping_pong.dto.response.ApiResponse;
 import com.prography.ping_pong.dto.response.user.UserPageResponse;
-import com.prography.ping_pong.service.user.UserService;
+import com.prography.ping_pong.service.user.UserFacadeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,11 +19,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserService userService;
+    private final UserFacadeService userFacadeService;
 
     @PostMapping("/init")
     public ResponseEntity<ApiResponse> initialize(@RequestBody UserInitializeRequest request) {
-        ApiResponse response = userService.initialize(request);
+        ApiResponse response = userFacadeService.initialize(request);
         return ResponseEntity.ok(response);
     }
 
@@ -33,7 +33,7 @@ public class UserController {
             @RequestParam(name = "page") int page
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        UserPageResponse pageResponse = userService.findAll(pageable);
+        UserPageResponse pageResponse = userFacadeService.findAll(pageable);
         ApiBodyResponse<UserPageResponse> response = ApiBodyResponse.ok(pageResponse);
         return ResponseEntity.ok(response);
     }

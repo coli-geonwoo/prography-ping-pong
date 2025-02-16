@@ -1,4 +1,4 @@
-package com.prography.ping_pong.service.user.client;
+package com.prography.ping_pong.client;
 
 import com.prography.ping_pong.dto.response.user.FakerResponse;
 import com.prography.ping_pong.dto.response.user.FakerUserResponse;

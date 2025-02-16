@@ -9,6 +9,10 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
+import com.prography.ping_pong.client.FakerResponseConverter;
+import com.prography.ping_pong.client.FakerUserDetails;
+import com.prography.ping_pong.client.PrographyProperties;
+import com.prography.ping_pong.client.UserInitializeClient;
 import com.prography.ping_pong.dto.request.user.FakerRequest;
 import com.prography.ping_pong.exception.custom.PingPongServerException;
 import com.prography.ping_pong.view.ResponseMessage;

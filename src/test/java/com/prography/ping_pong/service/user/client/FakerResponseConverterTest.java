@@ -3,6 +3,7 @@ package com.prography.ping_pong.service.user.client;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.prography.ping_pong.client.FakerResponseConverter;
 import com.prography.ping_pong.dto.response.user.FakerResponse;
 import com.prography.ping_pong.dto.response.user.FakerUserResponse;
 import com.prography.ping_pong.exception.custom.PingPongServerException;

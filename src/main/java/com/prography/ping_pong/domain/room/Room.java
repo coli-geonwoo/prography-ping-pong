@@ -51,25 +51,12 @@ public class Room extends BaseEntity {
         return status.isWait();
     }
 
-    public boolean isAttendAble(long participantCount) {
-        return status.isWait() && !roomType.isFull(participantCount);
+    public boolean canEnter(long participantCount) {
+        return isWait() && !roomType.isFull(participantCount);
     }
 
     public boolean isHost(long userId) {
         return host.isSame(userId);
-    }
-
-    public boolean isFull(long firstTeamCount, long secondTeamCount) {
-        long totalCount = firstTeamCount + secondTeamCount;
-        long totalCapacity = roomType.getTotalCapacity();
-        long teamCapacity = roomType.getTeamCapacity();
-        return totalCapacity == totalCount
-                && firstTeamCount == teamCapacity
-                && secondTeamCount == teamCapacity;
-    }
-
-    public boolean canExit() {
-        return status.isWait();
     }
 
     public void start() {

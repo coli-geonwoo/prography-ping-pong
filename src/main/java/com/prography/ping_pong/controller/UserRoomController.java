@@ -2,7 +2,7 @@ package com.prography.ping_pong.controller;
 
 import com.prography.ping_pong.dto.request.room.TeamChangeRequest;
 import com.prography.ping_pong.dto.response.ApiResponse;
-import com.prography.ping_pong.service.userroom.UserRoomService;
+import com.prography.ping_pong.service.userroom.UserRoomFacadeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,14 +14,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class UserRoomController {
 
-    private final UserRoomService userRoomService;
+    private final UserRoomFacadeService userRoomFacadeService;
 
     @PutMapping("/team/{roomId}")
     public ResponseEntity<ApiResponse> changeTeam(
             @RequestBody TeamChangeRequest request,
             @PathVariable(name = "roomId") long roomId
     ) {
-        userRoomService.changeTeam(request.userId(), roomId);
+        userRoomFacadeService.changeTeam(request.userId(), roomId);
         ApiResponse response = ApiResponse.ok();
         return ResponseEntity.ok(response);
     }

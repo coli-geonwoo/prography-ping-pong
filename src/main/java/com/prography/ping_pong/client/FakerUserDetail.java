@@ -1,4 +1,4 @@
-package com.prography.ping_pong.service.user.client;
+package com.prography.ping_pong.client;
 
 import com.prography.ping_pong.domain.user.UserStatus;
 import jakarta.validation.constraints.Email;
