@@ -15,6 +15,6 @@ public record RoomCreateResponse(
 ) {
 
     public RoomCreateResponse(Room room) {
-        this(room.getId(), room.getTitle(), room.getHost().getId(), room.getRoomType(), room.getStatus());
+        this(room.getId(), room.getTitle(), room.getHostId(), room.getRoomType(), room.getStatus());
     }
 }

@@ -17,7 +17,7 @@ class RoomTest {
     void initializeWithWait() {
         User host = new User(1L, 1L, "name", "email@email.com", UserStatus.ACTIVE);
 
-        Room room = new Room("title", host, RoomType.SINGLE);
+        Room room = new Room("title", host.getId(), RoomType.SINGLE);
 
         assertThat(room.getStatus()).isEqualTo(RoomStatus.WAIT);
     }
@@ -29,7 +29,7 @@ class RoomTest {
         User host = new User(1L, 1L, "name", "email@email.com", UserStatus.ACTIVE);
         RoomType roomType = RoomType.SINGLE;
         long participantCount = roomType.getTotalCapacity() - 1;
-        Room room = new Room(1L, "title", host, roomType, notWaitStatus);
+        Room room = new Room(1L, "title", host.getId(), roomType, notWaitStatus);
 
         assertThat(room.canEnter(participantCount)).isFalse();
     }
@@ -40,7 +40,7 @@ class RoomTest {
     void canEnter(RoomType roomType) {
         long participantCount = roomType.getTotalCapacity() - 1;
         User host = new User(1L, 1L, "name", "email@email.com", UserStatus.ACTIVE);
-        Room room = new Room("title", host, roomType);
+        Room room = new Room("title", host.getId(), roomType);
 
         assertThat(room.canEnter(participantCount)).isTrue();
     }
@@ -51,7 +51,7 @@ class RoomTest {
     void isNotAttendAbleWhenRoomIsFull(RoomType roomType) {
         long participantCount = roomType.getTotalCapacity();
         User host = new User(1L, 1L, "name", "email@email.com", UserStatus.ACTIVE);
-        Room room = new Room("title", host, roomType);
+        Room room = new Room("title", host.getId(), roomType);
 
         assertThat(room.canEnter(participantCount)).isFalse();
     }
@@ -60,7 +60,7 @@ class RoomTest {
     @Test
     void finishRoom() {
         User host = new User(1L, 1L, "name", "email@email.com", UserStatus.ACTIVE);
-        Room room = new Room("title", host, RoomType.SINGLE);
+        Room room = new Room("title", host.getId(), RoomType.SINGLE);
         room.finished();
 
         assertThat(room.getStatus()).isEqualTo(RoomStatus.FINISH);
@@ -72,7 +72,7 @@ class RoomTest {
         User host = new User(1L, 1L, "name", "email@email.com", UserStatus.ACTIVE);
         long hostId = host.getId();
         long notHostId = hostId + 1;
-        Room room = new Room("title", host, RoomType.SINGLE);
+        Room room = new Room("title", host.getId(), RoomType.SINGLE);
 
         assertAll(
                 () -> assertThat(room.isHost(hostId)).isTrue(),

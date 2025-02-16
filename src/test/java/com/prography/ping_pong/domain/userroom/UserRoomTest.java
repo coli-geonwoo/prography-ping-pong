@@ -18,7 +18,7 @@ class UserRoomTest {
         User user = new User(1L, 1L, "name", "email@email.com", UserStatus.ACTIVE);
         RoomType roomType = RoomType.DOUBLE;
         Team team = Team.RED;
-        Room room = new Room(1L, "title", user, roomType, RoomStatus.WAIT);
+        Room room = new Room(1L, "title", user.getId(), roomType, RoomStatus.WAIT);
         UserRoom userRoom = new UserRoom(user, room, team);
 
         userRoom.changeTeam();

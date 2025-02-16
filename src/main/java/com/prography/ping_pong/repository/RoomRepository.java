@@ -14,8 +14,6 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 
     Page<Room> findAllByOrderByIdAsc(Pageable pageable);
 
-    boolean existsByHost(User host);
-
     @Query("DELETE FROM Room room WHERE room IN :rooms")
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional

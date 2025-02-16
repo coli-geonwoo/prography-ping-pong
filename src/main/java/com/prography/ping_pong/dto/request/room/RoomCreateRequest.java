@@ -11,7 +11,7 @@ public record RoomCreateRequest(
         @NotNull String title
 ) {
 
-    public Room toRoom(User host) {
-        return new Room(title, host, roomType);
+    public Room toRoom() {
+        return new Room(title, userId, roomType);
     }
 }

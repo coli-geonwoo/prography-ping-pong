@@ -2,15 +2,13 @@ package com.prography.ping_pong.domain.room;
 
 import com.prography.ping_pong.domain.BaseEntity;
 import com.prography.ping_pong.domain.user.User;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -31,9 +29,8 @@ public class Room extends BaseEntity {
     private String title;
 
     @NotNull
-    @JoinColumn(name = "member_id")
-    @OneToOne(fetch = FetchType.LAZY)
-    private User host;
+    @Column(name = "member_id")
+    private long hostId;
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -43,8 +40,8 @@ public class Room extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private RoomStatus status;
 
-    public Room(String title, User host, RoomType roomType) {
-        this(null, title, host, roomType, RoomStatus.WAIT);
+    public Room(String title, long hostId, RoomType roomType) {
+        this(null, title, hostId, roomType, RoomStatus.WAIT);
     }
 
     public boolean isWait() {
@@ -56,7 +53,7 @@ public class Room extends BaseEntity {
     }
 
     public boolean isHost(long userId) {
-        return host.isSame(userId);
+        return hostId == userId;
     }
 
     public void start() {

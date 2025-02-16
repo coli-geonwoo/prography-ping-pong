@@ -33,7 +33,7 @@ public class RoomFacadeService {
     public RoomCreateResponse createRoom(RoomCreateRequest roomCreateRequest) {
         long hostId = roomCreateRequest.userId();
         User host = userService.findUser(hostId);
-        Room room = roomCreateRequest.toRoom(host);
+        Room room = roomCreateRequest.toRoom();
         Room savedRoom = roomService.createRoom(room);
         userRoomService.attend(host, room);
         return new RoomCreateResponse(savedRoom);

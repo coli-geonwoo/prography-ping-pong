@@ -21,7 +21,7 @@ public record RoomDetailResponse(
         this(
                 room.getId(),
                 room.getTitle(),
-                room.getHost().getId(),
+                room.getHostId(),
                 room.getRoomType(),
                 room.getStatus(),
                 room.getCreatedAt(),
