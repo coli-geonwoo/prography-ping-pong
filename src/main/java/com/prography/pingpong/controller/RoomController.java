@@ -1,6 +1,6 @@
 package com.prography.pingpong.controller;
 
-import com.prography.pingpong.controller.swagger.annotation.RoomControllerSwagger;
+import com.prography.pingpong.controller.swagger.RoomControllerSwagger;
 import com.prography.pingpong.dto.request.room.RoomAttendRequest;
 import com.prography.pingpong.dto.request.room.RoomCreateRequest;
 import com.prography.pingpong.dto.request.room.RoomExitRequest;
@@ -10,11 +10,9 @@ import com.prography.pingpong.dto.response.ApiResponse;
 import com.prography.pingpong.dto.response.room.RoomDetailResponse;
 import com.prography.pingpong.dto.response.room.RoomPageResponse;
 import com.prography.pingpong.service.room.RoomFacadeService;
-import com.prography.pingpong.service.room.RoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;

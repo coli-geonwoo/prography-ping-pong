@@ -1,5 +1,7 @@
-package com.prography.pingpong.controller.swagger.annotation;
+package com.prography.pingpong.controller.swagger;
 
+import com.prography.pingpong.controller.swagger.SwaggerResponse.SwaggerUserPageResponse;
+import com.prography.pingpong.controller.swagger.annotation.ErrorCode500;
 import com.prography.pingpong.dto.request.user.UserInitializeRequest;
 import com.prography.pingpong.dto.response.ApiBodyResponse;
 import com.prography.pingpong.dto.response.ApiResponse;
@@ -39,7 +41,7 @@ public interface UserControllerSwagger {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "200",
                             description = "유저 정보 조회 성공",
-                            content = @Content(schema = @Schema(oneOf = UserPageResponse.class))
+                            content = @Content(schema = @Schema(implementation = SwaggerUserPageResponse.class))
                     )
             }
     )

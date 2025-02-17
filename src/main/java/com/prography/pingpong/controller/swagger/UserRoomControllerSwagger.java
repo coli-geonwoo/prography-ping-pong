@@ -1,5 +1,7 @@
-package com.prography.pingpong.controller.swagger.annotation;
+package com.prography.pingpong.controller.swagger;
 
+import com.prography.pingpong.controller.swagger.annotation.ErrorCode201;
+import com.prography.pingpong.controller.swagger.annotation.ErrorCode500;
 import com.prography.pingpong.dto.request.room.TeamChangeRequest;
 import com.prography.pingpong.dto.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;

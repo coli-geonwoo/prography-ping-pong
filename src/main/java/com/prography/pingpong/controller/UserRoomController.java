@@ -1,6 +1,6 @@
 package com.prography.pingpong.controller;
 
-import com.prography.pingpong.controller.swagger.annotation.UserRoomControllerSwagger;
+import com.prography.pingpong.controller.swagger.UserRoomControllerSwagger;
 import com.prography.pingpong.dto.request.room.TeamChangeRequest;
 import com.prography.pingpong.dto.response.ApiResponse;
 import com.prography.pingpong.service.userroom.UserRoomFacadeService;

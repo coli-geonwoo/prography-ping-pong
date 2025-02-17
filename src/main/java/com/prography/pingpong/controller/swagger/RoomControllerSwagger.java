@@ -1,5 +1,9 @@
-package com.prography.pingpong.controller.swagger.annotation;
+package com.prography.pingpong.controller.swagger;
 
+import com.prography.pingpong.controller.swagger.SwaggerResponse.SwaggerRoomDetailResponse;
+import com.prography.pingpong.controller.swagger.SwaggerResponse.SwaggerRoomPageResponse;
+import com.prography.pingpong.controller.swagger.annotation.ErrorCode201;
+import com.prography.pingpong.controller.swagger.annotation.ErrorCode500;
 import com.prography.pingpong.dto.request.room.RoomAttendRequest;
 import com.prography.pingpong.dto.request.room.RoomCreateRequest;
 import com.prography.pingpong.dto.request.room.RoomExitRequest;
@@ -58,7 +62,7 @@ public interface RoomControllerSwagger {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "200",
                             description = "방 상세 조회 성공",
-                            content = @Content(schema = @Schema(oneOf = RoomDetailResponse.class))
+                            content = @Content(schema = @Schema(oneOf = SwaggerRoomDetailResponse.class))
                     )
             }
     )
@@ -75,7 +79,7 @@ public interface RoomControllerSwagger {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "200",
                             description = "방 정보 조회 성공",
-                            content = @Content(schema = @Schema(oneOf = RoomPageResponse.class))
+                            content = @Content(schema = @Schema(implementation = SwaggerRoomPageResponse.class))
                     )
             }
     )
