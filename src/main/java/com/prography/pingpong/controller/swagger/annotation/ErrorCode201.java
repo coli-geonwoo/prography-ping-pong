@@ -2,6 +2,7 @@ package com.prography.pingpong.controller.swagger.annotation;
 
 import com.prography.pingpong.exception.ErrorResponse;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import java.lang.annotation.ElementType;
@@ -17,7 +18,14 @@ import org.springframework.core.annotation.AliasFor;
 @ApiResponse(
         responseCode = "201",
         description = "클라이언트 입력 오류",
-        content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+        content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ErrorResponse.class),
+                examples = @ExampleObject(
+                        name = "클라이언트 입력 오류 예제",
+                        value = "{ \"code\": 201, \"message\": \"불가능한 요청입니다.\" }"
+                )
+        )
 )
 public @interface ErrorCode201 {
 
