@@ -1,17 +1,16 @@
 package com.prography.pingpong.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prography.pingpong.common.BaseControllerTest;
-import com.prography.pingpong.domain.room.RoomStatus;
-import com.prography.pingpong.domain.userroom.Team;
-import com.prography.pingpong.domain.userroom.UserRoom;
 import com.prography.pingpong.domain.room.Room;
+import com.prography.pingpong.domain.room.RoomStatus;
 import com.prography.pingpong.domain.room.RoomType;
 import com.prography.pingpong.domain.user.User;
 import com.prography.pingpong.domain.user.UserStatus;
+import com.prography.pingpong.domain.userroom.Team;
+import com.prography.pingpong.domain.userroom.UserRoom;
 import com.prography.pingpong.dto.request.room.RoomAttendRequest;
 import com.prography.pingpong.dto.request.room.RoomCreateRequest;
 import com.prography.pingpong.dto.request.room.RoomExitRequest;
