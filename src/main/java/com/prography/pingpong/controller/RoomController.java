@@ -1,5 +1,6 @@
 package com.prography.pingpong.controller;
 
+import com.prography.pingpong.controller.swagger.annotation.RoomControllerSwagger;
 import com.prography.pingpong.dto.request.room.RoomAttendRequest;
 import com.prography.pingpong.dto.request.room.RoomCreateRequest;
 import com.prography.pingpong.dto.request.room.RoomExitRequest;
@@ -24,63 +25,56 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-public class RoomController {
+public class RoomController implements RoomControllerSwagger {
 
-    private final RoomService roomService;
     private final RoomFacadeService roomFacadeService;
 
     @PostMapping("/room")
-    public ResponseEntity<ApiResponse> createRoom(@RequestBody RoomCreateRequest request) {
+    public ApiResponse createRoom(@RequestBody RoomCreateRequest request) {
         roomFacadeService.createRoom(request);
-        ApiResponse response = ApiResponse.ok();
-        return ResponseEntity.ok(response);
+        return ApiResponse.ok();
     }
 
     @PostMapping("/room/attention/{roomId}")
-    public ResponseEntity<ApiResponse> attendRoom(
+    public ApiResponse attendRoom(
             @PathVariable(name = "roomId") long roomId,
             @RequestBody RoomAttendRequest request
     ) {
         roomFacadeService.attendRoom(request.userId(), roomId);
-        ApiResponse response = ApiResponse.ok();
-        return ResponseEntity.ok(response);
+        return ApiResponse.ok();
     }
 
     @GetMapping("/room/{roomId}")
-    public ResponseEntity<ApiBodyResponse<RoomDetailResponse>> findRoom(@PathVariable(name = "roomId") long roomId) {
+    public ApiBodyResponse<RoomDetailResponse> findRoom(@PathVariable(name = "roomId") long roomId) {
         RoomDetailResponse room = roomFacadeService.findRoom(roomId);
-        ApiBodyResponse<RoomDetailResponse> response = ApiBodyResponse.ok(room);
-        return ResponseEntity.ok(response);
+        return ApiBodyResponse.ok(room);
     }
 
     @GetMapping("/room")
-    public ResponseEntity<ApiBodyResponse<RoomPageResponse>> findAllRooms(
+    public ApiBodyResponse<RoomPageResponse> findAllRooms(
             @RequestParam(name = "size") int size,
             @RequestParam(name = "page") int page
     ) {
         Pageable pageable = PageRequest.of(page, size);
         RoomPageResponse roomPageResponse = roomFacadeService.findAllRoom(pageable);
-        ApiBodyResponse<RoomPageResponse> response = ApiBodyResponse.ok(roomPageResponse);
-        return ResponseEntity.ok(response);
+        return ApiBodyResponse.ok(roomPageResponse);
     }
 
     @PutMapping("/room/start/{roomId}")
-    public ResponseEntity<ApiResponse> startRoom(
+    public ApiResponse startRoom(
             @RequestBody RoomStartRequest request,
             @PathVariable(name = "roomId") long roomId
     ) {
         roomFacadeService.startRoom(request.userId(), roomId);
-        ApiResponse response = ApiResponse.ok();
-        return ResponseEntity.ok(response);
+        return ApiResponse.ok();
     }
 
     @PostMapping("/room/out/{roomId}")
-    public ResponseEntity<ApiResponse> exitRoom(
+    public ApiResponse exitRoom(
             @RequestBody RoomExitRequest request,
             @PathVariable(name = "roomId") long roomId
     ) {
         roomFacadeService.exitRoom(request.userId(), roomId);
-        ApiResponse response = ApiResponse.ok();
-        return ResponseEntity.ok(response);
+        return ApiResponse.ok();
     }
 }
