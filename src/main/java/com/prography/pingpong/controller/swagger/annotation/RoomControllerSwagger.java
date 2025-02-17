@@ -29,7 +29,7 @@ public interface RoomControllerSwagger {
     @ErrorCode201(description = "생성하려는 유저가 ACTIVE가 아닐 때")
     @ErrorCode201(description = "생성하려는 유저가 참여하고 있는 방이 있을 때")
     @ErrorCode500
-    ApiResponse createRoom(@RequestBody RoomCreateRequest request);
+    ApiResponse createRoom(RoomCreateRequest request);
 
     @Operation(
             summary = "방 참여",
@@ -54,12 +54,12 @@ public interface RoomControllerSwagger {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "200",
                             description = "방 상세 조회 성공",
-                            content = @Content(schema = @Schema(implementation = ApiBodyResponse.class))
+                            content = @Content(schema = @Schema(oneOf = RoomDetailResponse.class))
                     )
             }
     )
     @ErrorCode500
-    ApiBodyResponse<RoomDetailResponse> findRoom(@PathVariable(name = "roomId") long roomId);
+    ApiBodyResponse<RoomDetailResponse> findRoom(long roomId);
 
     @Operation(
             summary = "방 전체 조회",
@@ -67,7 +67,7 @@ public interface RoomControllerSwagger {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "200",
                             description = "방 정보 조회 성공",
-                            content = @Content(schema = @Schema(implementation = ApiBodyResponse.class))
+                            content = @Content(schema = @Schema(oneOf = RoomPageResponse.class))
                     )
             }
     )

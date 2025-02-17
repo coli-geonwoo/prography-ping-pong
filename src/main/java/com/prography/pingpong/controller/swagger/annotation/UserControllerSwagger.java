@@ -31,7 +31,7 @@ public interface UserControllerSwagger {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "200",
                             description = "유저 정보 조회 성공",
-                            content = @Content(schema = @Schema(implementation = ApiBodyResponse.class))
+                            content = @Content(schema = @Schema(oneOf = UserPageResponse.class))
                     )
             }
     )
