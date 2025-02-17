@@ -1,4 +1,4 @@
-package com.prography.pingpong.docs.swagger.annotation;
+package com.prography.pingpong.controller.swagger.annotation;
 
 import com.prography.pingpong.exception.ErrorResponse;
 import io.swagger.v3.oas.annotations.media.Content;
