@@ -3,8 +3,10 @@ package com.prography.pingpong.controller.swagger.annotation;
 import com.prography.pingpong.dto.request.room.TeamChangeRequest;
 import com.prography.pingpong.dto.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "User Room API")
@@ -12,6 +14,8 @@ public interface UserRoomControllerSwagger {
 
     @Operation(
             summary = "팀 변경",
+            parameters = {@Parameter(name = "roomId", description = "팀을 변경할 방 아이디")},
+            requestBody = @RequestBody(content = @Content(schema = @Schema(implementation = TeamChangeRequest.class))),
             responses = {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "200",

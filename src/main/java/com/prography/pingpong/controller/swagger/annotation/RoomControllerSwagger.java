@@ -9,15 +9,16 @@ import com.prography.pingpong.dto.response.ApiResponse;
 import com.prography.pingpong.dto.response.room.RoomDetailResponse;
 import com.prography.pingpong.dto.response.room.RoomPageResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 
 public interface RoomControllerSwagger {
 
     @Operation(
             summary = "방 생성",
+            requestBody = @RequestBody(content = @Content(schema = @Schema(implementation = RoomCreateRequest.class))),
             responses = {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "200",
@@ -33,6 +34,8 @@ public interface RoomControllerSwagger {
 
     @Operation(
             summary = "방 참여",
+            parameters = {@Parameter(name = "roomId", description = "참여할 방 아이디")},
+            requestBody = @RequestBody(content = @Content(schema = @Schema(implementation = RoomAttendRequest.class))),
             responses = {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "200",
@@ -50,6 +53,7 @@ public interface RoomControllerSwagger {
 
     @Operation(
             summary = "방 상세 조회",
+            parameters = {@Parameter(name = "roomId", description = "조회할 방 아이디")},
             responses = {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "200",
@@ -63,6 +67,10 @@ public interface RoomControllerSwagger {
 
     @Operation(
             summary = "방 전체 조회",
+            parameters = {
+                    @Parameter(name = "size", description = "조회할 페이징 사이즈"),
+                    @Parameter(name = "page", description = "조회 페이지 번호")
+            },
             responses = {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "200",
@@ -76,6 +84,8 @@ public interface RoomControllerSwagger {
 
     @Operation(
             summary = "게임 시작",
+            parameters = {@Parameter(name = "roomId", description = "시작할 방 아이디")},
+            requestBody = @RequestBody(content = @Content(schema = @Schema(implementation = RoomStartRequest.class))),
             responses = {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "200",
@@ -93,6 +103,8 @@ public interface RoomControllerSwagger {
 
     @Operation(
             summary = "방 나가기",
+            parameters = {@Parameter(name = "roomId", description = "퇴장할 방 아이디")},
+            requestBody = @RequestBody(content = @Content(schema = @Schema(implementation = RoomExitRequest.class))),
             responses = {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "200",
