@@ -1,6 +1,7 @@
 package com.prography.pingpong.domain.user;
 
 import com.prography.pingpong.domain.BaseEntity;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -27,7 +28,8 @@ public class User extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private long fakerId; //TODO unique 설정
+    @Column(unique = true, nullable = false)
+    private long fakerId;
 
     @NotBlank
     private String name;
@@ -37,6 +39,7 @@ public class User extends BaseEntity {
     private String email;
 
     @NotNull
+    @Column(columnDefinition = "VARCHAR(20)")
     @Enumerated(EnumType.STRING)
     private UserStatus status;
 
@@ -46,9 +49,5 @@ public class User extends BaseEntity {
 
     public boolean isActive() {
         return this.status.isActive();
-    }
-
-    public boolean isSame(long userId) {
-        return this.id == userId;
     }
 }

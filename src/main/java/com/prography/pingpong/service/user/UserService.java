@@ -23,11 +23,11 @@ public class UserService {
     private final UserRepository userRepository;
 
     @Transactional
-    public List<User> initialize(long seed, long quantity) {
+    public void initialize(long seed, long quantity) {
         FakerRequest fakerRequest = new FakerRequest(seed, quantity);
         FakerUserDetails userDetails = userInitializeClient.getUserDetails(fakerRequest);
         List<User> users = mapToUsers(userDetails.getFakerUserDetails());
-        return userRepository.saveAll(users);
+        userRepository.saveAllByBulkQuery(users);
     }
 
     private List<User> mapToUsers(List<FakerUserDetail> userDetails) {
