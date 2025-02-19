@@ -1,5 +1,6 @@
 package com.prography.pingpong.common;
 
+import com.prography.pingpong.common.fixture.RoomGenerator;
 import com.prography.pingpong.common.fixture.UserGenerator;
 import com.prography.pingpong.repository.RoomRepository;
 import com.prography.pingpong.repository.UserRepository;
@@ -16,11 +17,11 @@ public abstract class BaseServiceTest {
     protected RoomRepository roomRepository;
 
     @Autowired
-    protected UserRepository userRepository;
-
-    @Autowired
     protected UserRoomRepository userRoomRepository;
 
     @Autowired
     protected UserGenerator userGenerator;
+
+    @Autowired
+    protected RoomGenerator roomGenerator;
 }

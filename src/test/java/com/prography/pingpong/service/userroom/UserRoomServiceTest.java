@@ -32,11 +32,10 @@ class UserRoomServiceTest extends BaseServiceTest {
         User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
         User savedUser2 = userGenerator.generate(2L, UserStatus.ACTIVE);
 
-        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
+        Room savedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
 
-        UserRoom userRoom1 = new UserRoom(savedUser1, dummy, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser2, dummy, Team.RED);
+        UserRoom userRoom1 = new UserRoom(savedUser1, savedRoom, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser2, savedRoom, Team.RED);
         UserRoom savedUserRoom1 = userRoomRepository.save(userRoom1);
         UserRoom savedUserRoom2 = userRoomRepository.save(userRoom2);
 
@@ -52,11 +51,10 @@ class UserRoomServiceTest extends BaseServiceTest {
         User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
         User savedUser2 = userGenerator.generate(2L, UserStatus.ACTIVE);
 
-        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
+        Room savedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
 
-        UserRoom userRoom1 = new UserRoom(savedUser1, dummy, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser2, dummy, Team.RED);
+        UserRoom userRoom1 = new UserRoom(savedUser1, savedRoom, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser2, savedRoom, Team.RED);
         UserRoom savedUserRoom1 = userRoomRepository.save(userRoom1);
         UserRoom savedUserRoom2 = userRoomRepository.save(userRoom2);
 
@@ -70,12 +68,10 @@ class UserRoomServiceTest extends BaseServiceTest {
     @Test
     void changeTeam() {
         User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
-
-        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
+        Room savedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
 
         Team team = Team.RED;
-        UserRoom userRoom1 = new UserRoom(savedUser1, dummy, team);
+        UserRoom userRoom1 = new UserRoom(savedUser1, savedRoom, team);
         UserRoom savedUserRoom1 = userRoomRepository.save(userRoom1);
 
         userRoomService.changeTeam(savedUser1.getId(), savedRoom.getId());
@@ -90,13 +86,12 @@ class UserRoomServiceTest extends BaseServiceTest {
     void canNotChangeTeamWhenRoomStatusIsNotWait(RoomStatus notWaitStatus) {
         User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
 
-        Room dummy = new Room(null, "room1", savedUser1.getId(), RoomType.SINGLE, notWaitStatus);
-        Room savedRoom = roomRepository.save(dummy);
+        Room alreadyStartedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, notWaitStatus);
 
-        UserRoom userRoom1 = new UserRoom(savedUser1, dummy, Team.RED);
+        UserRoom userRoom1 = new UserRoom(savedUser1, alreadyStartedRoom, Team.RED);
         UserRoom savedUserRoom1 = userRoomRepository.save(userRoom1);
 
-        assertThatThrownBy(() -> userRoomService.changeTeam(savedUser1.getId(), savedRoom.getId()))
+        assertThatThrownBy(() -> userRoomService.changeTeam(savedUser1.getId(), alreadyStartedRoom.getId()))
                 .isInstanceOf(PingPongClientErrorException.class)
                 .hasMessage(ResponseMessage.CLIENT_ERROR.getValue());
     }
@@ -107,11 +102,10 @@ class UserRoomServiceTest extends BaseServiceTest {
         User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
         User savedUser2 = userGenerator.generate(2L, UserStatus.ACTIVE);
 
-        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
+        Room savedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
 
-        UserRoom userRoom1 = new UserRoom(savedUser1, dummy, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser2, dummy, Team.BLUE);
+        UserRoom userRoom1 = new UserRoom(savedUser1, savedRoom, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser2, savedRoom, Team.BLUE);
         UserRoom savedUserRoom1 = userRoomRepository.save(userRoom1);
         UserRoom savedUserRoom2 = userRoomRepository.save(userRoom2);
 
@@ -126,11 +120,10 @@ class UserRoomServiceTest extends BaseServiceTest {
         User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
         User savedUser2 = userGenerator.generate(2L, UserStatus.ACTIVE);
 
-        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
+        Room savedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
 
-        UserRoom userRoom1 = new UserRoom(savedUser1, dummy, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser2, dummy, Team.BLUE);
+        UserRoom userRoom1 = new UserRoom(savedUser1, savedRoom, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser2, savedRoom, Team.BLUE);
         UserRoom savedUserRoom1 = userRoomRepository.save(userRoom1);
         UserRoom savedUserRoom2 = userRoomRepository.save(userRoom2);
 
@@ -141,11 +134,9 @@ class UserRoomServiceTest extends BaseServiceTest {
     @Test
     void isNotFull() {
         User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
+        Room savedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
 
-        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
-
-        UserRoom userRoom1 = new UserRoom(savedUser1, dummy, Team.RED);
+        UserRoom userRoom1 = new UserRoom(savedUser1, savedRoom, Team.RED);
         UserRoom savedUserRoom1 = userRoomRepository.save(userRoom1);
 
         assertThat(userRoomService.isFull(savedRoom)).isFalse();

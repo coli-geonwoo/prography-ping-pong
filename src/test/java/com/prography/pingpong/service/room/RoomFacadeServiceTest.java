@@ -43,9 +43,7 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     @Test
     void findRoom() {
         User savedUser = userGenerator.generate(1L, UserStatus.ACTIVE);
-
-        Room dummy = new Room("room1", savedUser.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
+        Room savedRoom = roomGenerator.generate(savedUser, RoomType.SINGLE, RoomStatus.WAIT);
 
         RoomDetailResponse roomDetailResponse = roomFacadeService.findRoom(savedRoom.getId());
 
@@ -63,11 +61,8 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     void findAllRooms() {
         User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
         User savedUser2 = userGenerator.generate(2L, UserStatus.ACTIVE);
-
-        Room dummy1 = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
-        Room dummy2 = new Room("room2", savedUser2.getId(), RoomType.SINGLE);
-        Room savedRoom1 = roomRepository.save(dummy1);
-        Room savedRoom2 = roomRepository.save(dummy2);
+        Room savedRoom1 = roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
+        Room savedRoom2 = roomGenerator.generate(savedUser2, RoomType.SINGLE, RoomStatus.WAIT);
 
         Pageable pageable = PageRequest.of(1, 1);
 
@@ -123,9 +118,8 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     @Test
     void canNotCreateRoomWithAlreadyParticipatedUser() {
         User savedUser = userGenerator.generate(1L, UserStatus.ACTIVE);
-        Room dummy = new Room("room1", savedUser.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
-        UserRoom userRoom = new UserRoom(savedUser, dummy, Team.RED);
+        Room savedRoom = roomGenerator.generate(savedUser, RoomType.SINGLE, RoomStatus.WAIT);
+        UserRoom userRoom = new UserRoom(savedUser, savedRoom, Team.RED);
         userRoomRepository.save(userRoom);
 
         RoomCreateRequest request = new RoomCreateRequest(savedUser.getId(), RoomType.SINGLE, "title");
@@ -140,9 +134,8 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     void attendRoom() {
         User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
         User savedUser2 = userGenerator.generate(2L, UserStatus.ACTIVE);
-        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
-        UserRoom userRoom = new UserRoom(savedUser1, dummy, Team.RED);
+        Room savedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
+        UserRoom userRoom = new UserRoom(savedUser1, savedRoom, Team.RED);
         userRoomRepository.save(userRoom);
 
         assertThatCode(() -> roomFacadeService.attendRoom(savedUser2.getId(), savedRoom.getId()))
@@ -155,9 +148,8 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     void canNotAttendRoomWithNonActiveUser(UserStatus nonActiveStatus) {
         User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
         User savedUser2 = userGenerator.generate(2L, nonActiveStatus);
-        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
-        UserRoom userRoom = new UserRoom(savedUser1, dummy, Team.RED);
+        Room savedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
+        UserRoom userRoom = new UserRoom(savedUser1, savedRoom, Team.RED);
         userRoomRepository.save(userRoom);
 
         assertThatThrownBy(() -> roomFacadeService.attendRoom(savedUser2.getId(), savedRoom.getId()))
@@ -231,12 +223,10 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     void exitAllUserWhenHostExit() {
         User savedHost = userGenerator.generate(1L, UserStatus.ACTIVE);
         User savedUser = userGenerator.generate(2L, UserStatus.ACTIVE);
+        Room savedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, RoomStatus.WAIT);
 
-        Room room = new Room("title", savedHost.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(room);
-
-        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
+        UserRoom userRoom1 = new UserRoom(savedHost, savedRoom, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser, savedRoom, Team.BLUE);
         userRoomRepository.save(userRoom1);
         userRoomRepository.save(userRoom2);
 
@@ -251,12 +241,10 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     void exitUser() {
         User savedHost = userGenerator.generate(1L, UserStatus.ACTIVE);
         User savedUser = userGenerator.generate(2L, UserStatus.ACTIVE);
+        Room savedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, RoomStatus.WAIT);
 
-        Room room = new Room("title", savedHost.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(room);
-
-        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
+        UserRoom userRoom1 = new UserRoom(savedHost, savedRoom, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser, savedRoom, Team.BLUE);
         userRoomRepository.save(userRoom1);
         userRoomRepository.save(userRoom2);
 
@@ -271,14 +259,12 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     @EnumSource(value = RoomStatus.class, mode = EnumSource.Mode.EXCLUDE, names = "WAIT")
     void canNotExitWhenRoomAlreadyStart(RoomStatus alreadyStartStatus) {
         User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
+        Room alreadyStartedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, alreadyStartStatus);
 
-        Room room = new Room(null, "title", savedUser1.getId(), RoomType.SINGLE, alreadyStartStatus);
-        Room savedRoom = roomRepository.save(room);
-
-        UserRoom userRoom1 = new UserRoom(savedUser1, room, Team.RED);
+        UserRoom userRoom1 = new UserRoom(savedUser1, alreadyStartedRoom, Team.RED);
         userRoomRepository.save(userRoom1);
 
-        assertThatThrownBy(() -> roomFacadeService.exitRoom(savedUser1.getId(), savedRoom.getId()))
+        assertThatThrownBy(() -> roomFacadeService.exitRoom(savedUser1.getId(), alreadyStartedRoom.getId()))
                 .isInstanceOf(PingPongClientErrorException.class)
                 .hasMessage(ResponseMessage.CLIENT_ERROR.getValue());
     }
@@ -345,11 +331,10 @@ class RoomFacadeServiceTest extends BaseServiceTest {
         User savedHost = userGenerator.generate(1L, UserStatus.ACTIVE);
         User savedUser = userGenerator.generate(2L, UserStatus.ACTIVE);
 
-        Room room = new Room("title", savedHost.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(room);
+        Room savedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, RoomStatus.WAIT);
 
-        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
+        UserRoom userRoom1 = new UserRoom(savedHost, savedRoom, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser, savedRoom, Team.BLUE);
         userRoomRepository.save(userRoom1);
         userRoomRepository.save(userRoom2);
 
@@ -365,11 +350,10 @@ class RoomFacadeServiceTest extends BaseServiceTest {
         User savedHost = userGenerator.generate(1L, UserStatus.ACTIVE);
         User savedUser = userGenerator.generate(2L, UserStatus.ACTIVE);
 
-        Room room = new Room("title", savedHost.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(room);
+        Room savedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, RoomStatus.WAIT);
 
-        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
+        UserRoom userRoom1 = new UserRoom(savedHost, savedRoom, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser, savedRoom, Team.BLUE);
         userRoomRepository.save(userRoom1);
         userRoomRepository.save(userRoom2);
 
@@ -382,11 +366,9 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     @Test
     void canNotStartRoomWhenRoomIsNotFull() {
         User savedHost = userGenerator.generate(1L, UserStatus.ACTIVE);
+        Room savedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, RoomStatus.WAIT);
 
-        Room room = new Room("title", savedHost.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(room);
-
-        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
+        UserRoom userRoom1 = new UserRoom(savedHost, savedRoom, Team.RED);
         userRoomRepository.save(userRoom1);
 
         assertThatThrownBy(() -> roomFacadeService.startRoom(savedHost.getId(), savedRoom.getId()))
@@ -401,15 +383,14 @@ class RoomFacadeServiceTest extends BaseServiceTest {
         User savedHost = userGenerator.generate(1L, UserStatus.ACTIVE);
         User savedUser = userGenerator.generate(2L, UserStatus.ACTIVE);
 
-        Room room = new Room(null, "title", savedHost.getId(), RoomType.SINGLE, notWaitStatus);
-        Room savedRoom = roomRepository.save(room);
+        Room alreadyStartedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, notWaitStatus);
 
-        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
+        UserRoom userRoom1 = new UserRoom(savedHost, alreadyStartedRoom, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser, alreadyStartedRoom, Team.BLUE);
         userRoomRepository.save(userRoom1);
         userRoomRepository.save(userRoom2);
 
-        assertThatThrownBy(() -> roomFacadeService.startRoom(savedHost.getId(), savedRoom.getId()))
+        assertThatThrownBy(() -> roomFacadeService.startRoom(savedHost.getId(), alreadyStartedRoom.getId()))
                 .isInstanceOf(PingPongClientErrorException.class)
                 .hasMessage(ResponseMessage.CLIENT_ERROR.getValue());
     }

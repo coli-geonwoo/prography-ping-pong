@@ -32,9 +32,7 @@ class RoomControllerTest extends BaseControllerTest {
     @Test
     void findRoom() {
         User savedUser = userGenerator.generate(1L, UserStatus.ACTIVE);
-
-        Room dummy = new Room("room1", savedUser.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
+        Room savedRoom = roomGenerator.generate(savedUser, RoomType.SINGLE, RoomStatus.WAIT);
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
@@ -68,10 +66,8 @@ class RoomControllerTest extends BaseControllerTest {
         User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
         User savedUser2 = userGenerator.generate(2L, UserStatus.ACTIVE);
 
-        Room dummy1 = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
-        Room dummy2 = new Room("room2", savedUser2.getId(), RoomType.SINGLE);
-        Room savedRoom1 = roomRepository.save(dummy1);
-        Room savedRoom2 = roomRepository.save(dummy2);
+        roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
+        roomGenerator.generate(savedUser2, RoomType.SINGLE, RoomStatus.WAIT);
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
@@ -138,9 +134,8 @@ class RoomControllerTest extends BaseControllerTest {
     @Test
     void canNotCreateRoomWithAlreadyParticipatedUser() {
         User savedUser = userGenerator.generate(1L, UserStatus.ACTIVE);
-        Room dummy = new Room("room1", savedUser.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
-        UserRoom userRoom = new UserRoom(savedUser, dummy, Team.RED);
+        Room savedRoom = roomGenerator.generate(savedUser, RoomType.SINGLE, RoomStatus.WAIT);
+        UserRoom userRoom = new UserRoom(savedUser, savedRoom, Team.RED);
         userRoomRepository.save(userRoom);
 
         RoomCreateRequest request = new RoomCreateRequest(savedUser.getId(), RoomType.SINGLE, "title");
@@ -158,9 +153,8 @@ class RoomControllerTest extends BaseControllerTest {
     void attendRoom() {
         User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
         User savedUser2 = userGenerator.generate(2L, UserStatus.ACTIVE);
-        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
-        UserRoom userRoom = new UserRoom(savedUser1, dummy, Team.RED);
+        Room savedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
+        UserRoom userRoom = new UserRoom(savedUser1, savedRoom, Team.RED);
         userRoomRepository.save(userRoom);
 
         RoomAttendRequest request = new RoomAttendRequest(savedUser2.getId());
@@ -190,9 +184,8 @@ class RoomControllerTest extends BaseControllerTest {
     void canNotAttendRoomWhenUserIsNotActive(UserStatus nonActiveStatus) {
         User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
         User savedNonActiveUser = userGenerator.generate(2L, nonActiveStatus);
-        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
-        UserRoom userRoom = new UserRoom(savedUser1, dummy, Team.RED);
+        Room savedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
+        UserRoom userRoom = new UserRoom(savedUser1, savedRoom, Team.RED);
         userRoomRepository.save(userRoom);
 
         RoomAttendRequest request = new RoomAttendRequest(savedNonActiveUser.getId());
@@ -213,11 +206,10 @@ class RoomControllerTest extends BaseControllerTest {
         User savedHost = userGenerator.generate(1L, UserStatus.ACTIVE);
         User savedUser = userGenerator.generate(2L, UserStatus.ACTIVE);
 
-        Room room = new Room("title", savedHost.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(room);
+        Room savedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, RoomStatus.WAIT);
 
-        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
+        UserRoom userRoom1 = new UserRoom(savedHost, savedRoom, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser, savedRoom, Team.BLUE);
         userRoomRepository.save(userRoom1);
         userRoomRepository.save(userRoom2);
 
@@ -248,11 +240,10 @@ class RoomControllerTest extends BaseControllerTest {
         User savedHost = userGenerator.generate(1L, UserStatus.ACTIVE);
         User savedUser = userGenerator.generate(2L, UserStatus.ACTIVE);
 
-        Room room = new Room("title", savedHost.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(room);
+        Room savedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, RoomStatus.WAIT);
 
-        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
+        UserRoom userRoom1 = new UserRoom(savedHost, savedRoom, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser, savedRoom, Team.BLUE);
         userRoomRepository.save(userRoom1);
         userRoomRepository.save(userRoom2);
 
@@ -283,10 +274,9 @@ class RoomControllerTest extends BaseControllerTest {
     void canNotExitWhenRoomAlreadyStart(RoomStatus alreadyStartStatus) {
         User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
 
-        Room room = new Room(null, "title", savedUser1.getId(), RoomType.SINGLE, alreadyStartStatus);
-        Room savedRoom = roomRepository.save(room);
+        Room alreadyStartedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, alreadyStartStatus);
 
-        UserRoom userRoom1 = new UserRoom(savedUser1, room, Team.RED);
+        UserRoom userRoom1 = new UserRoom(savedUser1, alreadyStartedRoom, Team.RED);
         userRoomRepository.save(userRoom1);
 
         RoomExitRequest request = new RoomExitRequest(savedUser1.getId());
@@ -294,7 +284,7 @@ class RoomControllerTest extends BaseControllerTest {
         RestAssured.given()
                 .contentType(ContentType.JSON)
                 .body(request)
-                .pathParam("roomId", savedRoom.getId())
+                .pathParam("roomId", alreadyStartedRoom.getId())
                 .when().post("/room/out/{roomId}")
                 .then()
                 .statusCode(HttpStatus.CREATED.value());
@@ -322,11 +312,10 @@ class RoomControllerTest extends BaseControllerTest {
         User savedHost = userGenerator.generate(1L, UserStatus.ACTIVE);
         User savedUser = userGenerator.generate(2L, UserStatus.ACTIVE);
 
-        Room room = new Room("title", savedHost.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(room);
+        Room savedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, RoomStatus.WAIT);
 
-        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
+        UserRoom userRoom1 = new UserRoom(savedHost, savedRoom, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser, savedRoom, Team.BLUE);
         userRoomRepository.save(userRoom1);
         userRoomRepository.save(userRoom2);
 
@@ -358,11 +347,10 @@ class RoomControllerTest extends BaseControllerTest {
         User savedHost = userGenerator.generate(1L, UserStatus.ACTIVE);
         User savedUser = userGenerator.generate(2L, UserStatus.ACTIVE);
 
-        Room room = new Room("title", savedHost.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(room);
+        Room savedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, RoomStatus.WAIT);
 
-        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
+        UserRoom userRoom1 = new UserRoom(savedHost, savedRoom, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser, savedRoom, Team.BLUE);
         userRoomRepository.save(userRoom1);
         userRoomRepository.save(userRoom2);
 
@@ -382,11 +370,9 @@ class RoomControllerTest extends BaseControllerTest {
     @Test
     void canNotStartRoomWhenRoomIsNotFull() {
         User savedHost = userGenerator.generate(1L, UserStatus.ACTIVE);
+        Room savedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, RoomStatus.WAIT);
 
-        Room room = new Room("title", savedHost.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(room);
-
-        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
+        UserRoom userRoom1 = new UserRoom(savedHost, savedRoom, Team.RED);
         userRoomRepository.save(userRoom1);
 
         RoomStartRequest request = new RoomStartRequest(savedHost.getId());
@@ -407,11 +393,10 @@ class RoomControllerTest extends BaseControllerTest {
         User savedHost = userGenerator.generate(1L, UserStatus.ACTIVE);
         User savedUser = userGenerator.generate(2L, UserStatus.ACTIVE);
 
-        Room room = new Room(null, "title", savedHost.getId(), RoomType.SINGLE, notWaitStatus);
-        Room savedRoom = roomRepository.save(room);
+        Room alreadyStartedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, notWaitStatus);
 
-        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
+        UserRoom userRoom1 = new UserRoom(savedHost, alreadyStartedRoom, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser, alreadyStartedRoom, Team.BLUE);
         userRoomRepository.save(userRoom1);
         userRoomRepository.save(userRoom2);
 
@@ -420,7 +405,7 @@ class RoomControllerTest extends BaseControllerTest {
         RestAssured.given()
                 .contentType(ContentType.JSON)
                 .body(request)
-                .pathParam("roomId", savedRoom.getId())
+                .pathParam("roomId", alreadyStartedRoom.getId())
                 .when().put("/room/start/{roomId}")
                 .then()
                 .statusCode(HttpStatus.CREATED.value());

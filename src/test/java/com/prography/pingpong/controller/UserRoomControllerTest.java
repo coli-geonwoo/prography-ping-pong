@@ -29,12 +29,10 @@ class UserRoomControllerTest extends BaseControllerTest {
     @Test
     void changeTeam() {
         User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
-
-        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
+        Room savedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
 
         Team team = Team.RED;
-        UserRoom userRoom1 = new UserRoom(savedUser1, dummy, team);
+        UserRoom userRoom1 = new UserRoom(savedUser1, savedRoom, team);
         UserRoom savedUserRoom1 = userRoomRepository.save(userRoom1);
 
         TeamChangeRequest request = new TeamChangeRequest(savedUser1.getId());
@@ -62,11 +60,9 @@ class UserRoomControllerTest extends BaseControllerTest {
     @EnumSource(value = RoomStatus.class, mode = Mode.EXCLUDE, names = "WAIT")
     void canNotChangeTeamWhenRoomStatusIsNotWait(RoomStatus notWaitStatus) {
         User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
+        Room alreadyStartedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, notWaitStatus);
 
-        Room dummy = new Room(null, "room1", savedUser1.getId(), RoomType.SINGLE, notWaitStatus);
-        Room savedRoom = roomRepository.save(dummy);
-
-        UserRoom userRoom1 = new UserRoom(savedUser1, dummy, Team.RED);
+        UserRoom userRoom1 = new UserRoom(savedUser1, alreadyStartedRoom, Team.RED);
         UserRoom savedUserRoom1 = userRoomRepository.save(userRoom1);
 
         TeamChangeRequest request = new TeamChangeRequest(savedUser1.getId());
@@ -74,7 +70,7 @@ class UserRoomControllerTest extends BaseControllerTest {
         RestAssured.given()
                 .body(request)
                 .contentType(ContentType.JSON)
-                .pathParam("roomId", savedRoom.getId())
+                .pathParam("roomId", alreadyStartedRoom.getId())
                 .when().put("/team/{roomId}")
                 .then()
                 .statusCode(HttpStatus.CREATED.value());
@@ -85,12 +81,10 @@ class UserRoomControllerTest extends BaseControllerTest {
     void canNotChangeTeamWhenOppositeTeamIsFull() {
         User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
         User savedUser2 = userGenerator.generate(2L, UserStatus.ACTIVE);
+        Room savedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
 
-        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
-
-        UserRoom userRoom1 = new UserRoom(savedUser1, dummy, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser2, dummy, Team.BLUE);
+        UserRoom userRoom1 = new UserRoom(savedUser1, savedRoom, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser2, savedRoom, Team.BLUE);
         UserRoom savedUserRoom1 = userRoomRepository.save(userRoom1);
         UserRoom savedUserRoom2 = userRoomRepository.save(userRoom2);
 
