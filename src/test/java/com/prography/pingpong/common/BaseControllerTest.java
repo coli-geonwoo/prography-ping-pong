@@ -1,5 +1,6 @@
 package com.prography.pingpong.common;
 
+import com.prography.pingpong.common.fixture.UserGenerator;
 import com.prography.pingpong.repository.RoomRepository;
 import com.prography.pingpong.repository.UserRepository;
 import com.prography.pingpong.repository.UserRoomRepository;
@@ -22,6 +23,9 @@ public abstract class BaseControllerTest {
 
     @Autowired
     protected UserRoomRepository userRoomRepository;
+
+    @Autowired
+    protected UserGenerator userGenerator;
 
     @LocalServerPort
     private int port;

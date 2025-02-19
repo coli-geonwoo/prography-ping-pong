@@ -29,10 +29,8 @@ class UserRoomServiceTest extends BaseServiceTest {
     @DisplayName("방의 모든 유저를 퇴장시킨다")
     @Test
     void exitAllRoomUsers() {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user2 = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
-        User savedUser1 = userRepository.save(user1);
-        User savedUser2 = userRepository.save(user2);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
+        User savedUser2 = userGenerator.generate(2L, UserStatus.ACTIVE);
 
         Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
         Room savedRoom = roomRepository.save(dummy);
@@ -51,10 +49,8 @@ class UserRoomServiceTest extends BaseServiceTest {
     @DisplayName("방의 특정 유저를 퇴장시킨다")
     @Test
     void exitRoomUser() {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user2 = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
-        User savedUser1 = userRepository.save(user1);
-        User savedUser2 = userRepository.save(user2);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
+        User savedUser2 = userGenerator.generate(2L, UserStatus.ACTIVE);
 
         Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
         Room savedRoom = roomRepository.save(dummy);
@@ -73,8 +69,7 @@ class UserRoomServiceTest extends BaseServiceTest {
     @DisplayName("특정 유저의 팀을 변경시킨다")
     @Test
     void changeTeam() {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User savedUser1 = userRepository.save(user1);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
 
         Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
         Room savedRoom = roomRepository.save(dummy);
@@ -93,8 +88,7 @@ class UserRoomServiceTest extends BaseServiceTest {
     @ParameterizedTest
     @EnumSource(value = RoomStatus.class, mode = Mode.EXCLUDE, names = "WAIT")
     void canNotChangeTeamWhenRoomStatusIsNotWait(RoomStatus notWaitStatus) {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User savedUser1 = userRepository.save(user1);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
 
         Room dummy = new Room(null, "room1", savedUser1.getId(), RoomType.SINGLE, notWaitStatus);
         Room savedRoom = roomRepository.save(dummy);
@@ -110,10 +104,8 @@ class UserRoomServiceTest extends BaseServiceTest {
     @DisplayName("변경하려는 팀 인원이 모두 차있다면 팀을 변경할 수 없다")
     @Test
     void canNotChangeTeamWhenOppositeTeamIsFull() {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user2 = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
-        User savedUser1 = userRepository.save(user1);
-        User savedUser2 = userRepository.save(user2);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
+        User savedUser2 = userGenerator.generate(2L, UserStatus.ACTIVE);
 
         Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
         Room savedRoom = roomRepository.save(dummy);
@@ -131,10 +123,8 @@ class UserRoomServiceTest extends BaseServiceTest {
     @DisplayName("방의 인원이 모두 찼는지 확인할 수 있다")
     @Test
     void isFull() {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user2 = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
-        User savedUser1 = userRepository.save(user1);
-        User savedUser2 = userRepository.save(user2);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
+        User savedUser2 = userGenerator.generate(2L, UserStatus.ACTIVE);
 
         Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
         Room savedRoom = roomRepository.save(dummy);
@@ -150,8 +140,7 @@ class UserRoomServiceTest extends BaseServiceTest {
     @DisplayName("방의 인원이 모두 차지 않았는지 확인할 수 있다")
     @Test
     void isNotFull() {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User savedUser1 = userRepository.save(user1);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
 
         Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
         Room savedRoom = roomRepository.save(dummy);

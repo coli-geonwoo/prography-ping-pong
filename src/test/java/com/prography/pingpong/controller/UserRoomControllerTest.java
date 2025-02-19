@@ -28,8 +28,7 @@ class UserRoomControllerTest extends BaseControllerTest {
     @DisplayName("팀을 변경할 수 있다")
     @Test
     void changeTeam() {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User savedUser1 = userRepository.save(user1);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
 
         Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
         Room savedRoom = roomRepository.save(dummy);
@@ -62,8 +61,7 @@ class UserRoomControllerTest extends BaseControllerTest {
     @ParameterizedTest
     @EnumSource(value = RoomStatus.class, mode = Mode.EXCLUDE, names = "WAIT")
     void canNotChangeTeamWhenRoomStatusIsNotWait(RoomStatus notWaitStatus) {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User savedUser1 = userRepository.save(user1);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
 
         Room dummy = new Room(null, "room1", savedUser1.getId(), RoomType.SINGLE, notWaitStatus);
         Room savedRoom = roomRepository.save(dummy);
@@ -85,10 +83,8 @@ class UserRoomControllerTest extends BaseControllerTest {
     @DisplayName("변경하려는 팀 인원이 모두 차있다면 팀을 변경할 수 없다")
     @Test
     void canNotChangeTeamWhenOppositeTeamIsFull() {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user2 = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
-        User savedUser1 = userRepository.save(user1);
-        User savedUser2 = userRepository.save(user2);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
+        User savedUser2 = userGenerator.generate(2L, UserStatus.ACTIVE);
 
         Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
         Room savedRoom = roomRepository.save(dummy);

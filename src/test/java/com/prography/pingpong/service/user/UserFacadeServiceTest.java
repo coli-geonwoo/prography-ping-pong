@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prography.pingpong.common.BaseServiceTest;
-import com.prography.pingpong.domain.user.User;
 import com.prography.pingpong.domain.user.UserStatus;
 import com.prography.pingpong.dto.response.user.UserPageResponse;
 import org.junit.jupiter.api.DisplayName;
@@ -20,10 +19,8 @@ class UserFacadeServiceTest extends BaseServiceTest {
     @DisplayName("페이징된 유저 목록을 조회한다")
     @Test
     void findAllUsers() {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user2 = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
-        userRepository.save(user1);
-        userRepository.save(user2);
+        userGenerator.generate(1L, UserStatus.ACTIVE);
+        userGenerator.generate(2L, UserStatus.ACTIVE);
 
         UserPageResponse response = userFacadeService.findAll(Pageable.ofSize(1).withPage(1));
 

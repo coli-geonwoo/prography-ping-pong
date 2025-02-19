@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prography.pingpong.common.BaseControllerTest;
-import com.prography.pingpong.domain.user.User;
 import com.prography.pingpong.domain.user.UserStatus;
 import com.prography.pingpong.dto.request.user.UserInitializeRequest;
 import com.prography.pingpong.dto.response.ApiResponse;
@@ -43,10 +42,8 @@ class UserControllerTest extends BaseControllerTest {
     @DisplayName("유저 페이지를 조회한다")
     @Test
     void findUsers() {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user2 = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
-        userRepository.save(user1);
-        userRepository.save(user2);
+        userGenerator.generate(1L, UserStatus.ACTIVE);
+        userGenerator.generate(2L, UserStatus.ACTIVE);
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
