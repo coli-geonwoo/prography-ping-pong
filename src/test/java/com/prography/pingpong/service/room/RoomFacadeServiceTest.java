@@ -119,8 +119,7 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     void canNotCreateRoomWithAlreadyParticipatedUser() {
         User savedUser = userGenerator.generate(1L, UserStatus.ACTIVE);
         Room savedRoom = roomGenerator.generate(savedUser, RoomType.SINGLE, RoomStatus.WAIT);
-        UserRoom userRoom = new UserRoom(savedUser, savedRoom, Team.RED);
-        userRoomRepository.save(userRoom);
+        UserRoom userRoom = userRoomGenerator.generate(savedUser, savedRoom, Team.RED);
 
         RoomCreateRequest request = new RoomCreateRequest(savedUser.getId(), RoomType.SINGLE, "title");
 
@@ -135,8 +134,7 @@ class RoomFacadeServiceTest extends BaseServiceTest {
         User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
         User savedUser2 = userGenerator.generate(2L, UserStatus.ACTIVE);
         Room savedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
-        UserRoom userRoom = new UserRoom(savedUser1, savedRoom, Team.RED);
-        userRoomRepository.save(userRoom);
+        UserRoom userRoom = userRoomGenerator.generate(savedUser1, savedRoom, Team.RED);
 
         assertThatCode(() -> roomFacadeService.attendRoom(savedUser2.getId(), savedRoom.getId()))
                 .doesNotThrowAnyException();
@@ -149,8 +147,7 @@ class RoomFacadeServiceTest extends BaseServiceTest {
         User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
         User savedUser2 = userGenerator.generate(2L, nonActiveStatus);
         Room savedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
-        UserRoom userRoom = new UserRoom(savedUser1, savedRoom, Team.RED);
-        userRoomRepository.save(userRoom);
+        UserRoom userRoom = userRoomGenerator.generate(savedUser1, savedRoom, Team.RED);
 
         assertThatThrownBy(() -> roomFacadeService.attendRoom(savedUser2.getId(), savedRoom.getId()))
                 .isInstanceOf(PingPongClientErrorException.class)
@@ -225,10 +222,8 @@ class RoomFacadeServiceTest extends BaseServiceTest {
         User savedUser = userGenerator.generate(2L, UserStatus.ACTIVE);
         Room savedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, RoomStatus.WAIT);
 
-        UserRoom userRoom1 = new UserRoom(savedHost, savedRoom, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser, savedRoom, Team.BLUE);
-        userRoomRepository.save(userRoom1);
-        userRoomRepository.save(userRoom2);
+        userRoomGenerator.generate(savedHost, savedRoom, Team.RED);
+        userRoomGenerator.generate(savedUser, savedRoom, Team.BLUE);
 
         roomFacadeService.exitRoom(savedHost.getId(), savedRoom.getId());
 
@@ -243,10 +238,8 @@ class RoomFacadeServiceTest extends BaseServiceTest {
         User savedUser = userGenerator.generate(2L, UserStatus.ACTIVE);
         Room savedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, RoomStatus.WAIT);
 
-        UserRoom userRoom1 = new UserRoom(savedHost, savedRoom, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser, savedRoom, Team.BLUE);
-        userRoomRepository.save(userRoom1);
-        userRoomRepository.save(userRoom2);
+        userRoomGenerator.generate(savedHost, savedRoom, Team.RED);
+        userRoomGenerator.generate(savedUser, savedRoom, Team.BLUE);
 
         roomFacadeService.exitRoom(savedUser.getId(), savedRoom.getId());
 
@@ -260,9 +253,7 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     void canNotExitWhenRoomAlreadyStart(RoomStatus alreadyStartStatus) {
         User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
         Room alreadyStartedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, alreadyStartStatus);
-
-        UserRoom userRoom1 = new UserRoom(savedUser1, alreadyStartedRoom, Team.RED);
-        userRoomRepository.save(userRoom1);
+        userRoomGenerator.generate(savedUser1, alreadyStartedRoom, Team.RED);
 
         assertThatThrownBy(() -> roomFacadeService.exitRoom(savedUser1.getId(), alreadyStartedRoom.getId()))
                 .isInstanceOf(PingPongClientErrorException.class)
@@ -333,10 +324,8 @@ class RoomFacadeServiceTest extends BaseServiceTest {
 
         Room savedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, RoomStatus.WAIT);
 
-        UserRoom userRoom1 = new UserRoom(savedHost, savedRoom, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser, savedRoom, Team.BLUE);
-        userRoomRepository.save(userRoom1);
-        userRoomRepository.save(userRoom2);
+        userRoomGenerator.generate(savedHost, savedRoom, Team.RED);
+        userRoomGenerator.generate(savedUser, savedRoom, Team.BLUE);
 
         roomFacadeService.startRoom(savedHost.getId(), savedRoom.getId());
 
@@ -352,10 +341,8 @@ class RoomFacadeServiceTest extends BaseServiceTest {
 
         Room savedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, RoomStatus.WAIT);
 
-        UserRoom userRoom1 = new UserRoom(savedHost, savedRoom, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser, savedRoom, Team.BLUE);
-        userRoomRepository.save(userRoom1);
-        userRoomRepository.save(userRoom2);
+        userRoomGenerator.generate(savedHost, savedRoom, Team.RED);
+        userRoomGenerator.generate(savedUser, savedRoom, Team.BLUE);
 
         assertThatThrownBy(() -> roomFacadeService.startRoom(savedUser.getId(), savedRoom.getId()))
                 .isInstanceOf(PingPongClientErrorException.class)
@@ -368,8 +355,7 @@ class RoomFacadeServiceTest extends BaseServiceTest {
         User savedHost = userGenerator.generate(1L, UserStatus.ACTIVE);
         Room savedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, RoomStatus.WAIT);
 
-        UserRoom userRoom1 = new UserRoom(savedHost, savedRoom, Team.RED);
-        userRoomRepository.save(userRoom1);
+        userRoomGenerator.generate(savedHost, savedRoom, Team.RED);
 
         assertThatThrownBy(() -> roomFacadeService.startRoom(savedHost.getId(), savedRoom.getId()))
                 .isInstanceOf(PingPongClientErrorException.class)
@@ -385,10 +371,8 @@ class RoomFacadeServiceTest extends BaseServiceTest {
 
         Room alreadyStartedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, notWaitStatus);
 
-        UserRoom userRoom1 = new UserRoom(savedHost, alreadyStartedRoom, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser, alreadyStartedRoom, Team.BLUE);
-        userRoomRepository.save(userRoom1);
-        userRoomRepository.save(userRoom2);
+        userRoomGenerator.generate(savedHost, alreadyStartedRoom, Team.RED);
+        userRoomGenerator.generate(savedUser, alreadyStartedRoom, Team.BLUE);
 
         assertThatThrownBy(() -> roomFacadeService.startRoom(savedHost.getId(), alreadyStartedRoom.getId()))
                 .isInstanceOf(PingPongClientErrorException.class)

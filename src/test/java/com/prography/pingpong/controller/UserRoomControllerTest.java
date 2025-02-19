@@ -32,8 +32,7 @@ class UserRoomControllerTest extends BaseControllerTest {
         Room savedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
 
         Team team = Team.RED;
-        UserRoom userRoom1 = new UserRoom(savedUser1, savedRoom, team);
-        UserRoom savedUserRoom1 = userRoomRepository.save(userRoom1);
+        UserRoom savedUserRoom1 = userRoomGenerator.generate(savedUser1, savedRoom, team);
 
         TeamChangeRequest request = new TeamChangeRequest(savedUser1.getId());
 
@@ -61,9 +60,7 @@ class UserRoomControllerTest extends BaseControllerTest {
     void canNotChangeTeamWhenRoomStatusIsNotWait(RoomStatus notWaitStatus) {
         User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
         Room alreadyStartedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, notWaitStatus);
-
-        UserRoom userRoom1 = new UserRoom(savedUser1, alreadyStartedRoom, Team.RED);
-        UserRoom savedUserRoom1 = userRoomRepository.save(userRoom1);
+        UserRoom savedUserRoom1 = userRoomGenerator.generate(savedUser1, alreadyStartedRoom, Team.RED);
 
         TeamChangeRequest request = new TeamChangeRequest(savedUser1.getId());
 
@@ -83,10 +80,8 @@ class UserRoomControllerTest extends BaseControllerTest {
         User savedUser2 = userGenerator.generate(2L, UserStatus.ACTIVE);
         Room savedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
 
-        UserRoom userRoom1 = new UserRoom(savedUser1, savedRoom, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser2, savedRoom, Team.BLUE);
-        UserRoom savedUserRoom1 = userRoomRepository.save(userRoom1);
-        UserRoom savedUserRoom2 = userRoomRepository.save(userRoom2);
+        UserRoom savedUserRoom1 = userRoomGenerator.generate(savedUser1, savedRoom, Team.RED);
+        UserRoom savedUserRoom2 = userRoomGenerator.generate(savedUser2, savedRoom, Team.BLUE);
 
         TeamChangeRequest request = new TeamChangeRequest(savedUser1.getId());
 
