@@ -4,12 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.prography.pingpong.common.BaseRepositoryTest;
-import com.prography.pingpong.domain.userroom.Team;
-import com.prography.pingpong.domain.userroom.UserRoom;
 import com.prography.pingpong.domain.room.Room;
 import com.prography.pingpong.domain.room.RoomType;
 import com.prography.pingpong.domain.user.User;
 import com.prography.pingpong.domain.user.UserStatus;
+import com.prography.pingpong.domain.userroom.Team;
+import com.prography.pingpong.domain.userroom.UserRoom;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

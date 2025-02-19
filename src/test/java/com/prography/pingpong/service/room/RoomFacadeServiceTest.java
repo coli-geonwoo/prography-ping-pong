@@ -42,11 +42,8 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     @DisplayName("아이디로 방을 찾는다")
     @Test
     void findRoom() {
-        User user = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User savedUser = userRepository.save(user);
-
-        Room dummy = new Room("room1", savedUser.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
+        User savedUser = userGenerator.generate(1L, UserStatus.ACTIVE);
+        Room savedRoom = roomGenerator.generate(savedUser, RoomType.SINGLE, RoomStatus.WAIT);
 
         RoomDetailResponse roomDetailResponse = roomFacadeService.findRoom(savedRoom.getId());
 
@@ -62,15 +59,10 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     @DisplayName("페이징 된 전체 방을 조회한다")
     @Test
     void findAllRooms() {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user2 = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
-        User savedUser1 = userRepository.save(user1);
-        User savedUser2 = userRepository.save(user2);
-
-        Room dummy1 = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
-        Room dummy2 = new Room("room2", savedUser2.getId(), RoomType.SINGLE);
-        Room savedRoom1 = roomRepository.save(dummy1);
-        Room savedRoom2 = roomRepository.save(dummy2);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
+        User savedUser2 = userGenerator.generate(2L, UserStatus.ACTIVE);
+        Room savedRoom1 = roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
+        Room savedRoom2 = roomGenerator.generate(savedUser2, RoomType.SINGLE, RoomStatus.WAIT);
 
         Pageable pageable = PageRequest.of(1, 1);
 
@@ -87,14 +79,13 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     @DisplayName("방을 생성함과 동시에 호스트는 방에 자동참여된다")
     @Test
     void createRoom() {
-        User user = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User savedUser = userRepository.save(user);
+        User savedUser = userGenerator.generate(1L, UserStatus.ACTIVE);
         RoomCreateRequest request = new RoomCreateRequest(savedUser.getId(), RoomType.SINGLE, "title");
 
         roomFacadeService.createRoom(request);
 
         long roomCount = roomRepository.count();
-        boolean exists = userRoomRepository.findByUserId(user.getId()).isPresent();
+        boolean exists = userRoomRepository.findByUserId(savedUser.getId()).isPresent();
         assertAll(
                 () -> assertThat(roomCount).isOne(),
                 () -> assertThat(exists).isTrue()
@@ -115,8 +106,7 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     @ParameterizedTest
     @EnumSource(value = UserStatus.class, mode = EnumSource.Mode.EXCLUDE, names = "ACTIVE")
     void canNotCreateRoomWithNonActiveUser(UserStatus nonActiveStatus) {
-        User user = new User(1L, "name1", "email1@email.com", nonActiveStatus);
-        User savedUser = userRepository.save(user);
+        User savedUser = userGenerator.generate(1L, nonActiveStatus);
         RoomCreateRequest request = new RoomCreateRequest(savedUser.getId(), RoomType.SINGLE, "title");
 
         assertThatThrownBy(() -> roomFacadeService.createRoom(request))
@@ -127,12 +117,9 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     @DisplayName("유저가 이미 참여한 방이 있다면 방 생성에 실패한다.")
     @Test
     void canNotCreateRoomWithAlreadyParticipatedUser() {
-        User user = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User savedUser = userRepository.save(user);
-        Room dummy = new Room("room1", savedUser.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
-        UserRoom userRoom = new UserRoom(user, dummy, Team.RED);
-        userRoomRepository.save(userRoom);
+        User savedUser = userGenerator.generate(1L, UserStatus.ACTIVE);
+        Room savedRoom = roomGenerator.generate(savedUser, RoomType.SINGLE, RoomStatus.WAIT);
+        UserRoom userRoom = userRoomGenerator.generate(savedUser, savedRoom, Team.RED);
 
         RoomCreateRequest request = new RoomCreateRequest(savedUser.getId(), RoomType.SINGLE, "title");
 
@@ -144,14 +131,10 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     @DisplayName("방에 참여할 수 있다")
     @Test
     void attendRoom() {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user2 = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
-        User savedUser1 = userRepository.save(user1);
-        User savedUser2 = userRepository.save(user2);
-        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
-        UserRoom userRoom = new UserRoom(user1, dummy, Team.RED);
-        userRoomRepository.save(userRoom);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
+        User savedUser2 = userGenerator.generate(2L, UserStatus.ACTIVE);
+        Room savedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
+        UserRoom userRoom = userRoomGenerator.generate(savedUser1, savedRoom, Team.RED);
 
         assertThatCode(() -> roomFacadeService.attendRoom(savedUser2.getId(), savedRoom.getId()))
                 .doesNotThrowAnyException();
@@ -161,14 +144,10 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     @ParameterizedTest
     @EnumSource(value = UserStatus.class, mode = EnumSource.Mode.EXCLUDE, names = "ACTIVE")
     void canNotAttendRoomWithNonActiveUser(UserStatus nonActiveStatus) {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user2 = new User(2L, "name2", "email2@email.com", nonActiveStatus);
-        User savedUser1 = userRepository.save(user1);
-        User savedUser2 = userRepository.save(user2);
-        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
-        UserRoom userRoom = new UserRoom(user1, dummy, Team.RED);
-        userRoomRepository.save(userRoom);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
+        User savedUser2 = userGenerator.generate(2L, nonActiveStatus);
+        Room savedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
+        UserRoom userRoom = userRoomGenerator.generate(savedUser1, savedRoom, Team.RED);
 
         assertThatThrownBy(() -> roomFacadeService.attendRoom(savedUser2.getId(), savedRoom.getId()))
                 .isInstanceOf(PingPongClientErrorException.class)
@@ -178,10 +157,8 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     @DisplayName("유저가 참여중인 다른 방이 있다면 방에 참여할 없다")
     @TestFactory
     Stream<DynamicTest> canNotAttendRoomWhenUserAlreadyAttendedOtherRooms() {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user2 = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
-        User savedUser1 = userRepository.save(user1);
-        User savedUser2 = userRepository.save(user2);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
+        User savedUser2 = userGenerator.generate(2L, UserStatus.ACTIVE);
 
         AtomicLong createdRoomId = new AtomicLong();
 
@@ -211,12 +188,9 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     @DisplayName("방이 모두 찼다면 참여할 수 없다")
     @TestFactory
     Stream<DynamicTest> canNotAttendRoomWhenRoomIsFull() {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user2 = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
-        User user3 = new User(3L, "name3", "email3@email.com", UserStatus.ACTIVE);
-        User savedUser1 = userRepository.save(user1);
-        User savedUser2 = userRepository.save(user2);
-        User savedUser3 = userRepository.save(user3);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
+        User savedUser2 = userGenerator.generate(2L, UserStatus.ACTIVE);
+        User savedUser3 = userGenerator.generate(3L, UserStatus.ACTIVE);
 
         AtomicLong createdRoomId = new AtomicLong();
 
@@ -244,18 +218,12 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     @DisplayName("방장이 나갈 경우, 모든 회원을 퇴장시킨다")
     @Test
     void exitAllUserWhenHostExit() {
-        User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
-        User savedHost = userRepository.save(host);
-        User savedUser = userRepository.save(user);
+        User savedHost = userGenerator.generate(1L, UserStatus.ACTIVE);
+        User savedUser = userGenerator.generate(2L, UserStatus.ACTIVE);
+        Room savedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, RoomStatus.WAIT);
 
-        Room room = new Room("title", savedHost.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(room);
-
-        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
-        userRoomRepository.save(userRoom1);
-        userRoomRepository.save(userRoom2);
+        userRoomGenerator.generate(savedHost, savedRoom, Team.RED);
+        userRoomGenerator.generate(savedUser, savedRoom, Team.BLUE);
 
         roomFacadeService.exitRoom(savedHost.getId(), savedRoom.getId());
 
@@ -266,18 +234,12 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     @DisplayName("방을 나갈 수 있다")
     @Test
     void exitUser() {
-        User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
-        User savedHost = userRepository.save(host);
-        User savedUser = userRepository.save(user);
+        User savedHost = userGenerator.generate(1L, UserStatus.ACTIVE);
+        User savedUser = userGenerator.generate(2L, UserStatus.ACTIVE);
+        Room savedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, RoomStatus.WAIT);
 
-        Room room = new Room("title", savedHost.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(room);
-
-        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
-        userRoomRepository.save(userRoom1);
-        userRoomRepository.save(userRoom2);
+        userRoomGenerator.generate(savedHost, savedRoom, Team.RED);
+        userRoomGenerator.generate(savedUser, savedRoom, Team.BLUE);
 
         roomFacadeService.exitRoom(savedUser.getId(), savedRoom.getId());
 
@@ -289,16 +251,11 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     @ParameterizedTest
     @EnumSource(value = RoomStatus.class, mode = EnumSource.Mode.EXCLUDE, names = "WAIT")
     void canNotExitWhenRoomAlreadyStart(RoomStatus alreadyStartStatus) {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User savedUser1 = userRepository.save(user1);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
+        Room alreadyStartedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, alreadyStartStatus);
+        userRoomGenerator.generate(savedUser1, alreadyStartedRoom, Team.RED);
 
-        Room room = new Room(null, "title", user1.getId(), RoomType.SINGLE, alreadyStartStatus);
-        Room savedRoom = roomRepository.save(room);
-
-        UserRoom userRoom1 = new UserRoom(savedUser1, room, Team.RED);
-        userRoomRepository.save(userRoom1);
-
-        assertThatThrownBy(() -> roomFacadeService.exitRoom(savedUser1.getId(), savedRoom.getId()))
+        assertThatThrownBy(() -> roomFacadeService.exitRoom(savedUser1.getId(), alreadyStartedRoom.getId()))
                 .isInstanceOf(PingPongClientErrorException.class)
                 .hasMessage(ResponseMessage.CLIENT_ERROR.getValue());
     }
@@ -306,8 +263,7 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     @DisplayName("존재하지 않는 방에 대한 나가기 요청을 할 수 없다")
     @Test
     void canNotExitNotExistingRoom() {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User savedUser1 = userRepository.save(user1);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
 
         assertThatThrownBy(() -> roomFacadeService.exitRoom(savedUser1.getId(), 1L))
                 .isInstanceOf(PingPongClientErrorException.class)
@@ -317,14 +273,10 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     @DisplayName("방 나가기 시나리오 테스트")
     @TestFactory
     Stream<DynamicTest> exitRoom() {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user2 = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
-        User user3 = new User(3L, "name3", "email3@email.com", UserStatus.ACTIVE);
-        User user4 = new User(4L, "name4", "email4@email.com", UserStatus.ACTIVE);
-        User savedUser1 = userRepository.save(user1);
-        User savedUser2 = userRepository.save(user2);
-        User savedUser3 = userRepository.save(user3);
-        User savedUser4 = userRepository.save(user4);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
+        User savedUser2 = userGenerator.generate(2L, UserStatus.ACTIVE);
+        User savedUser3 = userGenerator.generate(3L, UserStatus.ACTIVE);
+        User savedUser4 = userGenerator.generate(4L, UserStatus.ACTIVE);
 
         AtomicLong createdRoomId = new AtomicLong();
 
@@ -367,20 +319,15 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     @DisplayName("게임을 시작할 수 있다")
     @Test
     void startRoom() {
-        User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
-        User savedHost = userRepository.save(host);
-        User savedUser = userRepository.save(user);
+        User savedHost = userGenerator.generate(1L, UserStatus.ACTIVE);
+        User savedUser = userGenerator.generate(2L, UserStatus.ACTIVE);
 
-        Room room = new Room("title", savedHost.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(room);
+        Room savedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, RoomStatus.WAIT);
 
-        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
-        userRoomRepository.save(userRoom1);
-        userRoomRepository.save(userRoom2);
+        userRoomGenerator.generate(savedHost, savedRoom, Team.RED);
+        userRoomGenerator.generate(savedUser, savedRoom, Team.BLUE);
 
-        roomFacadeService.startRoom(host.getId(), savedRoom.getId());
+        roomFacadeService.startRoom(savedHost.getId(), savedRoom.getId());
 
         Room startedRoom = roomRepository.findById(savedRoom.getId()).get();
         assertThat(startedRoom.getStatus()).isEqualTo(RoomStatus.PROGRESS);
@@ -389,18 +336,13 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     @DisplayName("방장이 아니면 게임을 시작할 수 없다")
     @Test
     void canNotStartRoomWhenUserIsNotHost() {
-        User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
-        User savedHost = userRepository.save(host);
-        User savedUser = userRepository.save(user);
+        User savedHost = userGenerator.generate(1L, UserStatus.ACTIVE);
+        User savedUser = userGenerator.generate(2L, UserStatus.ACTIVE);
 
-        Room room = new Room("title", savedHost.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(room);
+        Room savedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, RoomStatus.WAIT);
 
-        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
-        userRoomRepository.save(userRoom1);
-        userRoomRepository.save(userRoom2);
+        userRoomGenerator.generate(savedHost, savedRoom, Team.RED);
+        userRoomGenerator.generate(savedUser, savedRoom, Team.BLUE);
 
         assertThatThrownBy(() -> roomFacadeService.startRoom(savedUser.getId(), savedRoom.getId()))
                 .isInstanceOf(PingPongClientErrorException.class)
@@ -410,14 +352,10 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     @DisplayName("인원이 모두 차지 않았다면 게임을 시작할 수 없다")
     @Test
     void canNotStartRoomWhenRoomIsNotFull() {
-        User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User savedHost = userRepository.save(host);
+        User savedHost = userGenerator.generate(1L, UserStatus.ACTIVE);
+        Room savedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, RoomStatus.WAIT);
 
-        Room room = new Room("title", savedHost.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(room);
-
-        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
-        userRoomRepository.save(userRoom1);
+        userRoomGenerator.generate(savedHost, savedRoom, Team.RED);
 
         assertThatThrownBy(() -> roomFacadeService.startRoom(savedHost.getId(), savedRoom.getId()))
                 .isInstanceOf(PingPongClientErrorException.class)
@@ -428,20 +366,15 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     @ParameterizedTest
     @EnumSource(value = RoomStatus.class, mode = EnumSource.Mode.EXCLUDE, names = "WAIT")
     void canNotStartRoomWhenRoomIsNotWait(RoomStatus notWaitStatus) {
-        User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
-        User savedHost = userRepository.save(host);
-        User savedUser = userRepository.save(user);
+        User savedHost = userGenerator.generate(1L, UserStatus.ACTIVE);
+        User savedUser = userGenerator.generate(2L, UserStatus.ACTIVE);
 
-        Room room = new Room(null, "title", savedHost.getId(), RoomType.SINGLE, notWaitStatus);
-        Room savedRoom = roomRepository.save(room);
+        Room alreadyStartedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, notWaitStatus);
 
-        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
-        userRoomRepository.save(userRoom1);
-        userRoomRepository.save(userRoom2);
+        userRoomGenerator.generate(savedHost, alreadyStartedRoom, Team.RED);
+        userRoomGenerator.generate(savedUser, alreadyStartedRoom, Team.BLUE);
 
-        assertThatThrownBy(() -> roomFacadeService.startRoom(savedHost.getId(), savedRoom.getId()))
+        assertThatThrownBy(() -> roomFacadeService.startRoom(savedHost.getId(), alreadyStartedRoom.getId()))
                 .isInstanceOf(PingPongClientErrorException.class)
                 .hasMessage(ResponseMessage.CLIENT_ERROR.getValue());
     }
@@ -449,10 +382,9 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     @DisplayName("존재하지 않는 방을 시작할 수 없다")
     @Test
     void canNotStartRoomWhenNotExistingRoom() {
-        User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User savedHost = userRepository.save(host);
+        User savedHost = userGenerator.generate(1L, UserStatus.ACTIVE);
 
-        assertThatThrownBy(() -> roomFacadeService.startRoom(host.getId(), 100L))
+        assertThatThrownBy(() -> roomFacadeService.startRoom(savedHost.getId(), 100L))
                 .isInstanceOf(PingPongClientErrorException.class)
                 .hasMessage(ResponseMessage.CLIENT_ERROR.getValue());
     }
@@ -461,16 +393,15 @@ class RoomFacadeServiceTest extends BaseServiceTest {
     @DisplayName("방 시작하기 시나리오 테스트")
     @TestFactory
     Stream<DynamicTest> startScenarioTest() {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user2 = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
-        User savedUser1 = userRepository.save(user1);
-        User savedUser2 = userRepository.save(user2);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
+        User savedUser2 = userGenerator.generate(2L, UserStatus.ACTIVE);
 
         AtomicLong createdRoomId = new AtomicLong();
 
         return Stream.of(
                 dynamicTest("유저1이 단식 방을 생성한다", () -> {
-                    RoomCreateRequest userOneRequest = new RoomCreateRequest(savedUser1.getId(), RoomType.SINGLE, "title");
+                    RoomCreateRequest userOneRequest = new RoomCreateRequest(savedUser1.getId(), RoomType.SINGLE,
+                            "title");
                     assertThatCode(() -> {
                         RoomCreateResponse createResponse = roomFacadeService.createRoom(userOneRequest);
                         createdRoomId.set(createResponse.id());

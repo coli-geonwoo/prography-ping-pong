@@ -29,18 +29,11 @@ class UserRoomServiceTest extends BaseServiceTest {
     @DisplayName("방의 모든 유저를 퇴장시킨다")
     @Test
     void exitAllRoomUsers() {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user2 = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
-        User savedUser1 = userRepository.save(user1);
-        User savedUser2 = userRepository.save(user2);
-
-        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
-
-        UserRoom userRoom1 = new UserRoom(savedUser1, dummy, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser2, dummy, Team.RED);
-        UserRoom savedUserRoom1 = userRoomRepository.save(userRoom1);
-        UserRoom savedUserRoom2 = userRoomRepository.save(userRoom2);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
+        User savedUser2 = userGenerator.generate(2L, UserStatus.ACTIVE);
+        Room savedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
+        userRoomGenerator.generate(savedUser1, savedRoom, Team.RED);
+        userRoomGenerator.generate(savedUser2, savedRoom, Team.BLUE);
 
         userRoomService.exitAllRoomUsers(savedRoom);
 
@@ -51,18 +44,11 @@ class UserRoomServiceTest extends BaseServiceTest {
     @DisplayName("방의 특정 유저를 퇴장시킨다")
     @Test
     void exitRoomUser() {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user2 = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
-        User savedUser1 = userRepository.save(user1);
-        User savedUser2 = userRepository.save(user2);
-
-        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
-
-        UserRoom userRoom1 = new UserRoom(savedUser1, dummy, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser2, dummy, Team.RED);
-        UserRoom savedUserRoom1 = userRoomRepository.save(userRoom1);
-        UserRoom savedUserRoom2 = userRoomRepository.save(userRoom2);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
+        User savedUser2 = userGenerator.generate(2L, UserStatus.ACTIVE);
+        Room savedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
+        UserRoom savedUserRoom1 = userRoomGenerator.generate(savedUser1, savedRoom, Team.RED);
+        UserRoom savedUserRoom2 = userRoomGenerator.generate(savedUser2, savedRoom, Team.BLUE);
 
         userRoomService.exitRoomUser(savedUserRoom1);
 
@@ -73,15 +59,10 @@ class UserRoomServiceTest extends BaseServiceTest {
     @DisplayName("특정 유저의 팀을 변경시킨다")
     @Test
     void changeTeam() {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User savedUser1 = userRepository.save(user1);
-
-        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
-
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
+        Room savedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
         Team team = Team.RED;
-        UserRoom userRoom1 = new UserRoom(savedUser1, dummy, team);
-        UserRoom savedUserRoom1 = userRoomRepository.save(userRoom1);
+        userRoomGenerator.generate(savedUser1, savedRoom, team);
 
         userRoomService.changeTeam(savedUser1.getId(), savedRoom.getId());
 
@@ -93,16 +74,11 @@ class UserRoomServiceTest extends BaseServiceTest {
     @ParameterizedTest
     @EnumSource(value = RoomStatus.class, mode = Mode.EXCLUDE, names = "WAIT")
     void canNotChangeTeamWhenRoomStatusIsNotWait(RoomStatus notWaitStatus) {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User savedUser1 = userRepository.save(user1);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
+        Room alreadyStartedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, notWaitStatus);
+        userRoomGenerator.generate(savedUser1, alreadyStartedRoom, Team.RED);
 
-        Room dummy = new Room(null, "room1", savedUser1.getId(), RoomType.SINGLE, notWaitStatus);
-        Room savedRoom = roomRepository.save(dummy);
-
-        UserRoom userRoom1 = new UserRoom(savedUser1, dummy, Team.RED);
-        UserRoom savedUserRoom1 = userRoomRepository.save(userRoom1);
-
-        assertThatThrownBy(() -> userRoomService.changeTeam(savedUser1.getId(), savedRoom.getId()))
+        assertThatThrownBy(() -> userRoomService.changeTeam(savedUser1.getId(), alreadyStartedRoom.getId()))
                 .isInstanceOf(PingPongClientErrorException.class)
                 .hasMessage(ResponseMessage.CLIENT_ERROR.getValue());
     }
@@ -110,18 +86,11 @@ class UserRoomServiceTest extends BaseServiceTest {
     @DisplayName("변경하려는 팀 인원이 모두 차있다면 팀을 변경할 수 없다")
     @Test
     void canNotChangeTeamWhenOppositeTeamIsFull() {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user2 = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
-        User savedUser1 = userRepository.save(user1);
-        User savedUser2 = userRepository.save(user2);
-
-        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
-
-        UserRoom userRoom1 = new UserRoom(savedUser1, dummy, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser2, dummy, Team.BLUE);
-        UserRoom savedUserRoom1 = userRoomRepository.save(userRoom1);
-        UserRoom savedUserRoom2 = userRoomRepository.save(userRoom2);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
+        User savedUser2 = userGenerator.generate(2L, UserStatus.ACTIVE);
+        Room savedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
+        userRoomGenerator.generate(savedUser1, savedRoom, Team.RED);
+        userRoomGenerator.generate(savedUser2, savedRoom, Team.BLUE);
 
         assertThatThrownBy(() -> userRoomService.changeTeam(savedUser1.getId(), savedRoom.getId()))
                 .isInstanceOf(PingPongClientErrorException.class)
@@ -131,18 +100,11 @@ class UserRoomServiceTest extends BaseServiceTest {
     @DisplayName("방의 인원이 모두 찼는지 확인할 수 있다")
     @Test
     void isFull() {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user2 = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
-        User savedUser1 = userRepository.save(user1);
-        User savedUser2 = userRepository.save(user2);
-
-        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
-
-        UserRoom userRoom1 = new UserRoom(savedUser1, dummy, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser2, dummy, Team.BLUE);
-        UserRoom savedUserRoom1 = userRoomRepository.save(userRoom1);
-        UserRoom savedUserRoom2 = userRoomRepository.save(userRoom2);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
+        User savedUser2 = userGenerator.generate(2L, UserStatus.ACTIVE);
+        Room savedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
+        userRoomGenerator.generate(savedUser1, savedRoom, Team.RED);
+        userRoomGenerator.generate(savedUser2, savedRoom, Team.BLUE);
 
         assertThat(userRoomService.isFull(savedRoom)).isTrue();
     }
@@ -150,14 +112,9 @@ class UserRoomServiceTest extends BaseServiceTest {
     @DisplayName("방의 인원이 모두 차지 않았는지 확인할 수 있다")
     @Test
     void isNotFull() {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User savedUser1 = userRepository.save(user1);
-
-        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
-
-        UserRoom userRoom1 = new UserRoom(savedUser1, dummy, Team.RED);
-        UserRoom savedUserRoom1 = userRoomRepository.save(userRoom1);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
+        Room savedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
+        userRoomGenerator.generate(savedUser1, savedRoom, Team.RED);
 
         assertThat(userRoomService.isFull(savedRoom)).isFalse();
     }

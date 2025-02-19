@@ -31,11 +31,8 @@ class RoomControllerTest extends BaseControllerTest {
     @DisplayName("방을 찾을 수 있다")
     @Test
     void findRoom() {
-        User user = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User savedUser = userRepository.save(user);
-
-        Room dummy = new Room("room1", savedUser.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
+        User savedUser = userGenerator.generate(1L, UserStatus.ACTIVE);
+        Room savedRoom = roomGenerator.generate(savedUser, RoomType.SINGLE, RoomStatus.WAIT);
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
@@ -66,15 +63,11 @@ class RoomControllerTest extends BaseControllerTest {
     @DisplayName("페이징된 전체 방들을 조회한다")
     @Test
     void findAllRooms() {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user2 = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
-        User savedUser1 = userRepository.save(user1);
-        User savedUser2 = userRepository.save(user2);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
+        User savedUser2 = userGenerator.generate(2L, UserStatus.ACTIVE);
 
-        Room dummy1 = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
-        Room dummy2 = new Room("room2", savedUser2.getId(), RoomType.SINGLE);
-        Room savedRoom1 = roomRepository.save(dummy1);
-        Room savedRoom2 = roomRepository.save(dummy2);
+        roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
+        roomGenerator.generate(savedUser2, RoomType.SINGLE, RoomStatus.WAIT);
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
@@ -88,8 +81,7 @@ class RoomControllerTest extends BaseControllerTest {
     @DisplayName("방을 생성할 수 있다")
     @Test
     void createRoom() {
-        User user = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User savedUser = userRepository.save(user);
+        User savedUser = userGenerator.generate(1L, UserStatus.ACTIVE);
         RoomCreateRequest request = new RoomCreateRequest(savedUser.getId(), RoomType.SINGLE, "title");
 
         ApiResponse response = RestAssured.given()
@@ -127,8 +119,7 @@ class RoomControllerTest extends BaseControllerTest {
     @ParameterizedTest
     @EnumSource(value = UserStatus.class, mode = EnumSource.Mode.EXCLUDE, names = "ACTIVE")
     void canNotCreateRoomWithNonActiveUser(UserStatus nonActiveStatus) {
-        User user = new User(1L, "name1", "email1@email.com", nonActiveStatus);
-        User savedUser = userRepository.save(user);
+        User savedUser = userGenerator.generate(1L, nonActiveStatus);
         RoomCreateRequest request = new RoomCreateRequest(savedUser.getId(), RoomType.SINGLE, "title");
 
         RestAssured.given()
@@ -142,11 +133,9 @@ class RoomControllerTest extends BaseControllerTest {
     @DisplayName("유저가 이미 참여한 방이 있다면 방 생성에 실패한다.")
     @Test
     void canNotCreateRoomWithAlreadyParticipatedUser() {
-        User user = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User savedUser = userRepository.save(user);
-        Room dummy = new Room("room1", savedUser.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
-        UserRoom userRoom = new UserRoom(user, dummy, Team.RED);
+        User savedUser = userGenerator.generate(1L, UserStatus.ACTIVE);
+        Room savedRoom = roomGenerator.generate(savedUser, RoomType.SINGLE, RoomStatus.WAIT);
+        UserRoom userRoom = new UserRoom(savedUser, savedRoom, Team.RED);
         userRoomRepository.save(userRoom);
 
         RoomCreateRequest request = new RoomCreateRequest(savedUser.getId(), RoomType.SINGLE, "title");
@@ -162,13 +151,10 @@ class RoomControllerTest extends BaseControllerTest {
     @DisplayName("방에 참여할 수 있다")
     @Test
     void attendRoom() {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user2 = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
-        User savedUser1 = userRepository.save(user1);
-        User savedUser2 = userRepository.save(user2);
-        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
-        UserRoom userRoom = new UserRoom(savedUser1, dummy, Team.RED);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
+        User savedUser2 = userGenerator.generate(2L, UserStatus.ACTIVE);
+        Room savedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
+        UserRoom userRoom = new UserRoom(savedUser1, savedRoom, Team.RED);
         userRoomRepository.save(userRoom);
 
         RoomAttendRequest request = new RoomAttendRequest(savedUser2.getId());
@@ -196,13 +182,10 @@ class RoomControllerTest extends BaseControllerTest {
     @ParameterizedTest
     @EnumSource(value = UserStatus.class, mode = EnumSource.Mode.EXCLUDE, names = "ACTIVE")
     void canNotAttendRoomWhenUserIsNotActive(UserStatus nonActiveStatus) {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User nonActiveUser = new User(2L, "name2", "email2@email.com", nonActiveStatus);
-        User savedUser1 = userRepository.save(user1);
-        User savedNonActiveUser = userRepository.save(nonActiveUser);
-        Room dummy = new Room("room1", savedUser1.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(dummy);
-        UserRoom userRoom = new UserRoom(savedUser1, dummy, Team.RED);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
+        User savedNonActiveUser = userGenerator.generate(2L, nonActiveStatus);
+        Room savedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, RoomStatus.WAIT);
+        UserRoom userRoom = new UserRoom(savedUser1, savedRoom, Team.RED);
         userRoomRepository.save(userRoom);
 
         RoomAttendRequest request = new RoomAttendRequest(savedNonActiveUser.getId());
@@ -220,16 +203,13 @@ class RoomControllerTest extends BaseControllerTest {
     @DisplayName("방장이 나갈 경우, 모든 회원을 퇴장시킨다")
     @Test
     void exitAllUserWhenHostExit() {
-        User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
-        User savedHost = userRepository.save(host);
-        User savedUser = userRepository.save(user);
+        User savedHost = userGenerator.generate(1L, UserStatus.ACTIVE);
+        User savedUser = userGenerator.generate(2L, UserStatus.ACTIVE);
 
-        Room room = new Room("title", savedHost.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(room);
+        Room savedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, RoomStatus.WAIT);
 
-        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
+        UserRoom userRoom1 = new UserRoom(savedHost, savedRoom, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser, savedRoom, Team.BLUE);
         userRoomRepository.save(userRoom1);
         userRoomRepository.save(userRoom2);
 
@@ -257,16 +237,13 @@ class RoomControllerTest extends BaseControllerTest {
     @DisplayName("방을 나갈 수 있다")
     @Test
     void exitUser() {
-        User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
-        User savedHost = userRepository.save(host);
-        User savedUser = userRepository.save(user);
+        User savedHost = userGenerator.generate(1L, UserStatus.ACTIVE);
+        User savedUser = userGenerator.generate(2L, UserStatus.ACTIVE);
 
-        Room room = new Room("title", savedHost.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(room);
+        Room savedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, RoomStatus.WAIT);
 
-        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
+        UserRoom userRoom1 = new UserRoom(savedHost, savedRoom, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser, savedRoom, Team.BLUE);
         userRoomRepository.save(userRoom1);
         userRoomRepository.save(userRoom2);
 
@@ -295,13 +272,11 @@ class RoomControllerTest extends BaseControllerTest {
     @ParameterizedTest
     @EnumSource(value = RoomStatus.class, mode = EnumSource.Mode.EXCLUDE, names = "WAIT")
     void canNotExitWhenRoomAlreadyStart(RoomStatus alreadyStartStatus) {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User savedUser1 = userRepository.save(user1);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
 
-        Room room = new Room(null, "title", user1.getId(), RoomType.SINGLE, alreadyStartStatus);
-        Room savedRoom = roomRepository.save(room);
+        Room alreadyStartedRoom = roomGenerator.generate(savedUser1, RoomType.SINGLE, alreadyStartStatus);
 
-        UserRoom userRoom1 = new UserRoom(savedUser1, room, Team.RED);
+        UserRoom userRoom1 = new UserRoom(savedUser1, alreadyStartedRoom, Team.RED);
         userRoomRepository.save(userRoom1);
 
         RoomExitRequest request = new RoomExitRequest(savedUser1.getId());
@@ -309,7 +284,7 @@ class RoomControllerTest extends BaseControllerTest {
         RestAssured.given()
                 .contentType(ContentType.JSON)
                 .body(request)
-                .pathParam("roomId", savedRoom.getId())
+                .pathParam("roomId", alreadyStartedRoom.getId())
                 .when().post("/room/out/{roomId}")
                 .then()
                 .statusCode(HttpStatus.CREATED.value());
@@ -318,8 +293,7 @@ class RoomControllerTest extends BaseControllerTest {
     @DisplayName("존재하지 않는 방에 대한 나가기 요청을 할 수 없다")
     @Test
     void canNotExitNotExistingRoom() {
-        User user1 = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User savedUser1 = userRepository.save(user1);
+        User savedUser1 = userGenerator.generate(1L, UserStatus.ACTIVE);
 
         RoomExitRequest request = new RoomExitRequest(savedUser1.getId());
 
@@ -335,16 +309,13 @@ class RoomControllerTest extends BaseControllerTest {
     @DisplayName("게임을 시작할 수 있다")
     @Test
     void startRoom() {
-        User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
-        User savedHost = userRepository.save(host);
-        User savedUser = userRepository.save(user);
+        User savedHost = userGenerator.generate(1L, UserStatus.ACTIVE);
+        User savedUser = userGenerator.generate(2L, UserStatus.ACTIVE);
 
-        Room room = new Room("title", savedHost.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(room);
+        Room savedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, RoomStatus.WAIT);
 
-        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
+        UserRoom userRoom1 = new UserRoom(savedHost, savedRoom, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser, savedRoom, Team.BLUE);
         userRoomRepository.save(userRoom1);
         userRoomRepository.save(userRoom2);
 
@@ -373,16 +344,13 @@ class RoomControllerTest extends BaseControllerTest {
     @DisplayName("방장이 아니면 게임을 시작할 수 없다")
     @Test
     void canNotStartRoomWhenUserIsNotHost() {
-        User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
-        User savedHost = userRepository.save(host);
-        User savedUser = userRepository.save(user);
+        User savedHost = userGenerator.generate(1L, UserStatus.ACTIVE);
+        User savedUser = userGenerator.generate(2L, UserStatus.ACTIVE);
 
-        Room room = new Room("title", savedHost.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(room);
+        Room savedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, RoomStatus.WAIT);
 
-        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
+        UserRoom userRoom1 = new UserRoom(savedHost, savedRoom, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser, savedRoom, Team.BLUE);
         userRoomRepository.save(userRoom1);
         userRoomRepository.save(userRoom2);
 
@@ -401,13 +369,10 @@ class RoomControllerTest extends BaseControllerTest {
     @DisplayName("인원이 모두 차지 않았다면 게임을 시작할 수 없다")
     @Test
     void canNotStartRoomWhenRoomIsNotFull() {
-        User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User savedHost = userRepository.save(host);
+        User savedHost = userGenerator.generate(1L, UserStatus.ACTIVE);
+        Room savedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, RoomStatus.WAIT);
 
-        Room room = new Room("title", savedHost.getId(), RoomType.SINGLE);
-        Room savedRoom = roomRepository.save(room);
-
-        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
+        UserRoom userRoom1 = new UserRoom(savedHost, savedRoom, Team.RED);
         userRoomRepository.save(userRoom1);
 
         RoomStartRequest request = new RoomStartRequest(savedHost.getId());
@@ -425,16 +390,13 @@ class RoomControllerTest extends BaseControllerTest {
     @ParameterizedTest
     @EnumSource(value = RoomStatus.class, mode = EnumSource.Mode.EXCLUDE, names = "WAIT")
     void canNotStartRoomWhenRoomIsNotWait(RoomStatus notWaitStatus) {
-        User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User user = new User(2L, "name2", "email2@email.com", UserStatus.ACTIVE);
-        User savedHost = userRepository.save(host);
-        User savedUser = userRepository.save(user);
+        User savedHost = userGenerator.generate(1L, UserStatus.ACTIVE);
+        User savedUser = userGenerator.generate(2L, UserStatus.ACTIVE);
 
-        Room room = new Room(null, "title", savedHost.getId(), RoomType.SINGLE, notWaitStatus);
-        Room savedRoom = roomRepository.save(room);
+        Room alreadyStartedRoom = roomGenerator.generate(savedHost, RoomType.SINGLE, notWaitStatus);
 
-        UserRoom userRoom1 = new UserRoom(savedHost, room, Team.RED);
-        UserRoom userRoom2 = new UserRoom(savedUser, room, Team.BLUE);
+        UserRoom userRoom1 = new UserRoom(savedHost, alreadyStartedRoom, Team.RED);
+        UserRoom userRoom2 = new UserRoom(savedUser, alreadyStartedRoom, Team.BLUE);
         userRoomRepository.save(userRoom1);
         userRoomRepository.save(userRoom2);
 
@@ -443,7 +405,7 @@ class RoomControllerTest extends BaseControllerTest {
         RestAssured.given()
                 .contentType(ContentType.JSON)
                 .body(request)
-                .pathParam("roomId", savedRoom.getId())
+                .pathParam("roomId", alreadyStartedRoom.getId())
                 .when().put("/room/start/{roomId}")
                 .then()
                 .statusCode(HttpStatus.CREATED.value());
@@ -452,8 +414,7 @@ class RoomControllerTest extends BaseControllerTest {
     @DisplayName("존재하지 않는 방을 시작할 수 없다")
     @Test
     void canNotStartRoomWhenNotExistingRoom() {
-        User host = new User(1L, "name1", "email1@email.com", UserStatus.ACTIVE);
-        User savedHost = userRepository.save(host);
+        User savedHost = userGenerator.generate(1L, UserStatus.ACTIVE);
 
         RoomStartRequest request = new RoomStartRequest(savedHost.getId());
 
