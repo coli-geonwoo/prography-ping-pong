@@ -14,7 +14,7 @@ import org.springframework.http.HttpStatus;
 public class ApiBodyResponse<T> {
 
     @Schema(description = "응답 코드", example = "200")
-    private Integer code;
+    private long code;
 
     @Schema(description = "응답 메시지", example = "API 요청이 성공했습니다.")
     private String message;
