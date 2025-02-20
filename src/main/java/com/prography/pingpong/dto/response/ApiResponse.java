@@ -4,7 +4,7 @@ import com.prography.pingpong.view.ResponseMessage;
 import org.springframework.http.HttpStatus;
 
 public record ApiResponse(
-        Integer code,
+        long code,
         String message
 ) {
 
